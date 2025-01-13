@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.hbq969.code.sm.login.dao.LoginDao">
+    <update id="createUsers">
+        CREATE TABLE `h_users`
+        (
+            `app`        varchar(255) NOT NULL comment '应用',
+            `username`   VARCHAR(255) NOT NULL comment '账号名',
+            `password`   VARCHAR(255) NOT NULL comment '密码',
+            `role_name`  VARCHAR(255) NOT NULl comment '角色名称',
+            `created_at` NUMERIC(20) comment '创建时间',
+            `updated_at` NUMERIC(20) comment '更新时间',
+            primary key (`app`, `username`)
+        ) ENGINE = InnoDB
+          DEFAULT CHARSET = utf8
+    </update>
+
+    <update id="createRoles">
+        CREATE TABLE `h_roles`
+        (
+            `app`         varchar(255) NOT NULL comment '应用',
+            `name`        VARCHAR(255) NOT NULL comment '角色名称',
+            `description` VARCHAR(500) comment '角色描述',
+            `created_at`  NUMERIC(20) comment '创建时间',
+            `updated_at`  NUMERIC(20) comment '更新时间',
+            primary key  (`app`, `name`)
+        ) ENGINE = InnoDB
+          DEFAULT CHARSET = utf8
+    </update>
+
+    <update id="createMenus">
+        CREATE TABLE `h_menus`
+        (
+            `app`         varchar(255) NOT NULL comment '应用',
+            `name`        VARCHAR(255) NOT NULL comment '菜单名称',
+            `menu_desc`   VARCHAR(255) comment '菜单描述',
+            `url`         VARCHAR(255) comment '菜单链接',
+            `parent_key`  varchar(255) DEFAULT '0' comment '父菜单标识',
+            `menu_level`  NUMERIC(2)   default 1 comment '菜单层级',
+            `order_index` NUMERIC(10)  DEFAULT 0 comment '菜单顺序',
+            `icon_name`   varchar(255) DEFAULT 'LogIcon' comment '菜单图标',
+            `created_at`  NUMERIC(20) comment '创建时间',
+            `updated_at`  NUMERIC(20) comment '修改时间',
+            primary key (`app`, `name`)
+        ) ENGINE = InnoDB
+          DEFAULT CHARSET = utf8
+    </update>
+
+    <update id="createRoleMenus">
+        CREATE TABLE `h_role_menus`
+        (
+            `app`       varchar(255) NOT NULL comment '应用',
+            `role_name` varchar(255) NOT NULL comment '角色ID',
+            `menu_name` varchar(255) NOT NULL comment '菜单ID',
+            primary key (`app`, `role_name`, `menu_name`)
+        ) ENGINE = InnoDB
+          DEFAULT CHARSET = utf8
+    </update>
+</mapper>
