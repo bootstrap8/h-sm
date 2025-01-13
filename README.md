@@ -1,113 +1,75 @@
-基于定制的脚手架快速生成`springboot`工程项目骨架代码和相关基础设施，使用脚手架工程模板主要作用是工程化规格化我们的项目工程，让开发团队都使用一套规约进行工程目录文件的维护。方便开发团队快速创建出统一风格的工程目录和代码模板，此版本基于`SpringBoot 2.7.18`版本，模版继承至h-parent这个父模版，类库的版本统一由h-parent进行维护，在自建模块中尽量少引入额外的类库。
+一个包含基本登录、注销、系统管理（角色、用户、菜单）的壳子，应用依赖后添加少量配置即可集成对应功能，适合于构建应用服务的后台管理维护相关功能。
 
-Based on the customized scaffolding, the skeleton code and related infrastructure of the `springboot` project are quickly generated. The main purpose of using the scaffolding project template is to standardize our project engineering and let the development team use a set of specifications to maintain the project directory files. It is convenient for the development team to quickly create a unified style of project directory and code templates. This version is based on the `SpringBoot 2.7.18` version. The template inherits from the parent template h-parent. The version of the class library is uniformly maintained by h-parent. Try to introduce as few additional class libraries as possible in the self-built module.
+A shell that includes basic login, logout, and system management (roles, users, menus). After the application dependency, a small amount of configuration can be added to integrate the corresponding functions. It is suitable for building background management and maintenance related functions of application services.
 
 
 
+## 快速开始 (Quick Start)
 ```bash
-git clone https://github.com/hbq969/h-archetype.git
+git clone https://github.com/hbq969/h-sm.git
+cd h-sm/src/main/resources/static
+nvm use 16 
+npm i && npm run build
+cd h-sm 
+mvn -U -DskipTests=true clean install
 ```
 
 
 
 
-```bash
-cd h-archetype/target/generated-sources/archetype
-mvn install
+
+## 配置 (Config)
+
+- 添加依赖
+
+```xml
+	<dependency>
+    <groupId>com.github.hbq969</groupId>
+    <artifactId>h-sm</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </dependency>
 ```
 
 
 
-
-```bash
-mvn archetype:generate \
--DinteractiveMode=false \
--DarchetypeGroupId=com.github.hbq969 \
--DarchetypeArtifactId=h-archetype \
--DarchetypeVersion=1.0-SNAPSHOT \
--DgroupId=com.github.hbq969 \
--Dversion=1.0-SNAPSHOT \
--DartifactId=h-example \
--Dpackage=com.github.hbq969 \
--Dproduct=code \
--Dmodule=example \
--DappPort=8080 \
--Dauthor=hbq969@gmail.com
-```
-
-
-|      **属性**       | **说明**                                                     |     **示例**      |
-| :-----------------: | :----------------------------------------------------------- | :---------------: |
-|  archetypeGroupId   | 骨架groupId                                                  | com.github.hbq969 |
-| archetypeArtifactId | 骨架artifactId                                               |    h-archetype    |
-|  archetypeVersion   | 骨架版本                                                     |   1.0-SNAPSHOT    |
-|       groupId       | 待创建工程groupId                                            | com.github.hbq969 |
-|     artifactId      | 待创建工程artifactId<br/>尽量使用code-sm        |     h-example     |
-|       package       | 待创建工程的包名<br/>实际创建后包名<br/>com.github.hbq969.code.sm | com.github.hbq969 |
-|       product       | 产品名称                                                     |       code        |
-|       module        | 模块名称                                                     |      example      |
-|       version       | 待创建工程版本                                               |   1.0-SNAPSHOT    |
-|       appPort       | 微服务监听端口                                               |       8080        |
-|       author        | 作者                                                         | hbq969@gmail.com  |
-
-
-
-
-- 基础的系统模块功能
-- 前端框架（登录页、主体页面框架）
-- 字典管理功能
-- 表管理功能
-
-
-
-
-
-```yml
-dict:
-  enabled: true
-  # 重载周期
-  reload:
-    cron: 0 */30 * * * *
-  # 转义后字段前缀
-  map-key-prefix: fmt
-```
-
-
-
+- 必要的配置
 
 ```yaml
-tabula:
-  enabled: true
-  # 选择数据库类型
-  dialect: mysql
-  # 如果是mysql，schema即为database，如果是oracle，schema为用户
-  schema: demo
-  # 是否开启表数据修改
-  open-edit-delete: true
-```
-
-
-
-
-```yaml
+server:
+  servlet:
+    context-path: /${artifactId}
+    session:
+      cookie:
+        http-only: true
+        max-age: ${login.cookie-max-age-sec}
+        secure: false
+        same-site: strict
+        path: /
+      timeout: 30m
 login:
   enabled: true
-  # 会话Cookie失效时长
   cookie-max-age-sec: 1800
-  # 不需要会话拦截的url，一般场景下将业务接口排除掉，登录功能尽量只拦截模块自身维护的接口
+  dialect: embedded
+  include-urls:
+    - "/hbq969-sm/**"
+    - "/hbq969-dict/**"
+    - "/hbq969-tabula/**"
+    - "/common/encrypt/**"
+    - "/ui-gw/**"
+    - "/**/doc.html"
+    - "/**/swagger-ui.html"
+    - "/**/api-docs"
   exclude-urls:
-    - "/**/*.js"
-    - "/**/*.css"
-    - "/**/*.png"
-    - "/**/*.jpg"
-    - "/**/*.map"
-    - "/**/*.html"
-    - "/**/*.ico"
-    - "/**/login"
-    - "/**/logout"
     - "/**/error"
-  # 使用哪种数据库
-  dialect: mysql
+    - "/common/health"
+    - "/hbq969-sm/index.html"
+    - "/hbq969-sm/**/*.js"
+    - "/hbq969-sm/**/*.css"
+    - "/hbq969-sm/**/*.png"
+    - "/hbq969-sm/**/*.jpg"
+    - "/hbq969-sm/**/*.map"
+    - "/hbq969-sm/**/*.ico"
+    - "/hbq969-sm/**/login"
 ```
 
 
@@ -141,39 +103,80 @@ spring:
 
 
 
-`Step 1：` 创建`vue`视图模版
+
+## 功能演示 (Features)
+
+![](src/main/resources/static/src/assets/features-login.png)
+
+
+
+
+
+![](src/main/resources/static/src/assets/features-main.png)
+
+
+
+## 如何添加菜单？(How add Menu?)
+
+### Step 1： 创建`vue`视图模版
 
  创建 `src/main/resources/static/src/views/xxx/main.vue`，然后编写页面代码
 
 
 
-`Step 2:` 配置菜单
+### Step 2:  添加vue路由
 
-> 注意这里url需要和上面的视图模块保持一致，这个是约定的规则
+```javascript
+import {createRouter, createWebHashHistory} from 'vue-router'
 
-使用 `admin` 账号，进入菜单管理页面进行配置
+const routes = [
+    {
+        path: '/xxx',
+        component: () => import('@/views/xxx/main.vue')
+    }
+]
+
+const router = createRouter({
+    history: createWebHashHistory(process.env.BASE_URL),
+    routes
+})
+
+export default router
+```
+
+
+
+### Step 3: 构建打包
+
+```bash
+npm run build
+```
+
+###   
+
+### Step4: 添加菜单
+
+> `h-demo`为`${server.servlet.context-path}`，`demo-ui`为`vue.config.js`中定义的`outputDir`
+
+1. 添加菜单
 
 ![](src/main/resources/static/src/assets/addMenu.png)
 
 
 
-`Step 3:` 角色关联菜单
+2. 角色关联菜单
 
-使用 `admin` 账号进入角色管理菜单选择某个角色关联上刚配置的菜单
-
-![](src/main/resources/static/src/assets/bingMenu.png)
+![](src/main/resources/static/src/assets/features-role-menus.png)
 
 
 
-![](src/main/resources/static/src/assets/showMenu.png)
-
-
-
+## 问题联系 (Contact)
 
 [hbq969@gmail.com](mailto:hbq969@gmail.com)
 
 
 
+## 许可 (License)
 
 The MIT License (MIT)
 
