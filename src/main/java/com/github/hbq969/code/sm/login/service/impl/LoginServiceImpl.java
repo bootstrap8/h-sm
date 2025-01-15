@@ -303,7 +303,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         String logKey = "创建";
         if (user == null) {
             session = request.getSession();
-            UserInfo oldUser = (UserInfo) session.getAttribute("user");
+            UserInfo oldUser = (UserInfo) session.getAttribute("h-sm-user");
             user = loginDao.queryUserByName(app, oldUser.getUserName());
             logKey = "更新";
         } else {
@@ -316,7 +316,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         List<MenuEntity> list = loginDao.queryRoleMenus2(app, user.getRoleName());
         List<MenuEntity> confMenus = groupSortMenu(list);
         ui.setMenus(confMenus);
-        session.setAttribute("user", ui);
+        session.setAttribute("h-sm-user", ui);
         log.info("{}会话, id: {}, user: {}", logKey, session.getId(), GsonUtils.toJson(ui));
         if (StringUtils.equals("创建", logKey)) {
             sessions.put(session.getId(), session);
@@ -358,9 +358,10 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
     public void logout(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession();
         if (session != null) {
-            log.info("注销账号: {}, 会话: {}", session.getAttribute("user"), session.getId());
+            log.info("注销账号: {}, 会话: {}", session.getAttribute("h-sm-user"), session.getId());
             sessions.invalidate(session.getId());
             Cookie jsessionCookie = new Cookie("JSESSIONID", null);
+            jsessionCookie.setMaxAge(5);
             jsessionCookie.setPath("/");
             jsessionCookie.setHttpOnly(true);
             response.addCookie(jsessionCookie);
@@ -381,7 +382,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
     public UserInfo getUserInfo(HttpServletRequest request) {
         HttpSession session = request.getSession();
         if (session != null) {
-            return (UserInfo) session.getAttribute("user");
+            return (UserInfo) session.getAttribute("h-sm-user");
         } else {
             throw new RuntimeException("会话失效，请重新登录");
         }

@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
 
-@ConfigurationProperties(prefix = "login")
+@ConfigurationProperties(prefix = "spring.mvc.interceptors.login")
 @Data
 public class LoginConfig {
     /**

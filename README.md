@@ -37,39 +37,46 @@ mvn -U -DskipTests=true clean install
 ```yaml
 server:
   servlet:
-    context-path: /${artifactId}
+    context-path: /h-demo
     session:
       cookie:
         http-only: true
-        max-age: ${login.cookie-max-age-sec}
+        max-age: ${spring.mvc.interceptors.login.cookie-max-age-sec}
         secure: false
         same-site: strict
         path: /
       timeout: 30m
-login:
-  enabled: true
-  cookie-max-age-sec: 1800
-  dialect: embedded
-  include-urls:
-    - "/hbq969-sm/**"
-    - "/hbq969-dict/**"
-    - "/hbq969-tabula/**"
-    - "/common/encrypt/**"
-    - "/ui-gw/**"
-    - "/**/doc.html"
-    - "/**/swagger-ui.html"
-    - "/**/api-docs"
-  exclude-urls:
-    - "/**/error"
-    - "/common/health"
-    - "/hbq969-sm/index.html"
-    - "/hbq969-sm/**/*.js"
-    - "/hbq969-sm/**/*.css"
-    - "/hbq969-sm/**/*.png"
-    - "/hbq969-sm/**/*.jpg"
-    - "/hbq969-sm/**/*.map"
-    - "/hbq969-sm/**/*.ico"
-    - "/hbq969-sm/**/login"
+spring:
+  mvc:
+    interceptors:
+      api-safe:
+        enabled: false
+      login:
+        enabled: true
+        cookie-max-age-sec: 1800
+        dialect: embedded
+        include-urls:
+          - "/hbq969-sm/**"
+          - "/hbq969-dict/**"
+          - "/hbq969-tabula/**"
+          - "/common/encrypt/**"
+          - "/ui-gw/**"
+        exclude-urls:
+          - "/**/error"
+          - "/common/health"
+          - "/hbq969-sm/index.html"
+          - "/hbq969-sm/**/*.js"
+          - "/hbq969-sm/**/*.css"
+          - "/hbq969-sm/**/*.png"
+          - "/hbq969-sm/**/*.jpg"
+          - "/hbq969-sm/**/*.map"
+          - "/hbq969-sm/**/*.ico"
+          - "/hbq969-sm/**/login"
+      resource-handler-registry:
+        entries:
+          - handlers: /hbq969-sm/**
+            locations: classpath:/static/hbq969-sm/
+        enabled: true
 ```
 
 
@@ -85,7 +92,7 @@ spring:
 ```
 
 
-
+> 否则就开启api-safe
 ```yaml
 spring:
   mvc:
@@ -94,10 +101,23 @@ spring:
         enabled: true
         # 需要保护的api接口，未开启登录功能时最好配置
         include-path-patterns:
-          - /hbq969-dict/**
-          - /hbq969-tabula/**
+          - "/hbq969-sm/**"
+          - "/hbq969-dict/**"
+          - "/hbq969-tabula/**"
+          - "/common/encrypt/**"
+          - "/ui-gw/**"
+          - "/**/doc.html"
+          - "/**/swagger-ui.html"
+          - "/**/api-docs"
         header-name: api安全请求头名称
         header-value-regex: api安全请求头值
+      login:
+        enabled: false
+      resource-handler-registry:
+        entries:
+          - handlers: /hbq969-sm/**
+            locations: classpath:/static/hbq969-sm/
+        enabled: true
 ```
 
 

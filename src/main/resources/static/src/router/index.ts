@@ -16,6 +16,14 @@ const routes = [
     {
         path: '/main_left',
         component: () => import('@/views/main/left.vue')
+    },
+    {
+        path: '/404',
+        component: () => import('@/views/system/404.vue')
+    },
+    {
+        path: '/500',
+        component: () => import('@/views/system/500.vue')
     }
 ]
 

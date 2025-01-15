@@ -2,15 +2,26 @@
   <div class="container">
     <el-container style="height: 100vh; overflow: hidden; border-radius: 8px;">
       <el-header class="header">
-        <div style="display: flex">
-          <el-icon size="24">
+        <div style="display: flex; cursor: pointer" @click="refreshPage">
+          <el-icon size="20">
             <component :is="getIconComponent('HomeIcon')"/>
           </el-icon>
-          <span style="font-size: 1.2em;margin-left: 10px">H-SM</span>
+          <span style="font-size:1em;margin-left: 10px">H-SM</span>
         </div>
         <div style="display: flex; align-items: center;">
-          <TimeComponent/>
-          <span style="margin-right: 10px;margin-left:0px; padding:0;font-size: 0.6em;">,
+          <el-switch
+              v-model="layout"
+              class="ml-2"
+              inline-prompt
+              style="--el-switch-on-color: #79BBFF; --el-switch-off-color: #95D475;margin-right: 5px"
+              active-value="main_left"
+              inactive-value="main_top"
+              active-text="上下布局"
+              inactive-text="左右布局"
+              @change="router.push({path:`/${layout}`})"
+          />
+<!--          <TimeComponent/>-->
+          <span style="margin-right: 10px;margin-left:0px; padding:0;font-size: 0.6em;">
             {{ data.user.userName }}
           </span>
           <el-icon @click="logout" style="cursor: pointer;color: red;" size="20">
@@ -92,7 +103,8 @@
         <el-container style="height: calc(100vh - 60px); overflow: hidden; background-color: #f5f7fa;margin-top: 60px">
           <div style="width: 100%;">
             <!-- 顶部区域 -->
-            <div style="height: 39px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background-color: #fff; border-bottom: 1px solid #e4e7ed;">
+            <div
+                style="height: 39px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background-color: #fff; border-bottom: 1px solid #e4e7ed;">
               <!-- 导航面包屑 -->
               <el-breadcrumb separator="/">
                 <el-breadcrumb-item>首页</el-breadcrumb-item>
@@ -107,14 +119,15 @@
                   type="card"
                   closable
                   @tab-remove="removeTab"
-                  style="height: 100%;"
+                  class="custom-tabs"
+                  :class="{ 'has-tabs': tabs.length > 0 }"
               >
                 <el-tab-pane
                     v-for="tab in tabs"
                     :key="tab.name"
                     :label="tab.label"
                     :name="tab.name"
-                    style="height: calc(100vh - 156px); overflow-y: auto;"
+                    class="custom-tab-pane"
                 >
                   <component :is="tab.component"/>
                 </el-tab-pane>
@@ -142,7 +155,7 @@
   left: 0px;
   right: 0px;
   z-index: 1000;
-  background-color: #fafcff;
+  background-color: #ffffff;
   color: #333;
   padding: 10px 20px;
   border-bottom: 1px solid #eaeaea;
@@ -161,15 +174,93 @@
   background-color: #1296db; /* 蓝色背景 */
   color: #fff; /* 白色文字 */
 }
+
+.custom-tabs {
+  height: 100%;
+  margin-top: 2px;
+  background-color: white;
+}
+
+.custom-tabs .el-tabs__item {
+  font-size: 14px;
+  color: #333;
+  padding: 10px 20px;
+  transition: all 0.3s;
+}
+
+.custom-tabs .el-tabs__item.is-active {
+  color: #409EFF;
+  border-bottom: 1px solid #409EFF;
+}
+
+.custom-tabs .el-tabs__item:hover {
+  color: #409EFF;
+}
+
+.custom-tab-pane {
+  height: calc(100vh - 156px);
+  overflow-y: auto;
+}
+
+/* 默认隐藏底部边框线 */
+:deep(.el-tabs__header) {
+  border-bottom: none;
+}
+
+/* 有 Tab 页时显示底部边框线 */
+:deep(.el-tabs.has-tabs .el-tabs__header) {
+  border-bottom: 1px solid #ddd;
+}
+
+:deep(.el-tabs__item) {
+  background-color: #fafafa; /* 未选中背景色 */
+  position: relative; /* 为伪元素定位 */
+  -webkit-transition: all .3s cubic-bezier(.645,.045,.355,1);
+  transition: all .3s cubic-bezier(.645,.045,.355,1);
+}
+
+:deep(.el-tabs__item::after) {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #ddd; /* 分隔线颜色 */
+}
+
+:deep(.el-tabs__item.is-active) {
+  background-color: white; /* 选中背景色 */
+  color: #1890ff;
+  border-color: #e8e8e8;
+  border-bottom: 1px solid #fff;
+}
+
+:deep(.el-tabs__item.is-active::after) {
+  display: none; /* 选中状态隐藏分隔线 */
+}
 </style>
 
 <script lang="ts" setup>
 import {Expand, Fold, SwitchButton,} from '@element-plus/icons-vue';
-import {defineAsyncComponent, markRaw, onMounted, reactive, ref, resolveComponent, defineComponent, h, nextTick} from 'vue';
+import {
+  defineAsyncComponent,
+  markRaw,
+  onMounted,
+  reactive,
+  ref,
+  resolveComponent,
+  defineComponent,
+  h,
+  nextTick,
+  computed
+} from 'vue';
 import axios from '@/network';
 import {msg} from '@/utils/Utils';
 import router from '@/router'
 import TimeComponent from '@/components/TimeComponent.vue';
+
+const layout=ref('main_left')
 
 const data = reactive({
   currentPage: '主页',
@@ -242,8 +333,18 @@ const toggleCollapse = () => {
   isCollapse.value = !isCollapse.value;
 };
 
+const checkUrlStatus = async (url: string) => {
+  try {
+    const response = await fetch(url, {method: 'HEAD'});
+    return response.status;
+  } catch (error) {
+    console.error('URL 检查失败:', error);
+    return 500;
+  }
+};
+
 // 处理菜单项选择
-const handleMenuSelect = (index: string) => {
+const handleMenuSelect = async (index: string) => {
   let component;
 
   if (index.startsWith('http:') || index.startsWith('https:')) {
@@ -261,7 +362,6 @@ const handleMenuSelect = (index: string) => {
         // 处理内部 iframe
         const iframeUrl = index.substring(6);
         console.log('iframeUrl: ', iframeUrl);
-
         component = defineComponent({
           setup() {
             const iframe = ref<HTMLIFrameElement | null>(null);
@@ -291,18 +391,25 @@ const handleMenuSelect = (index: string) => {
               }
             };
 
-            return { iframeUrl, onIframeLoad, iframe, isLoading };
+            return {iframeUrl, onIframeLoad, iframe, isLoading};
           },
           render() {
-            return h('div', { style: { width: '100%', height: '100%', position: 'relative' } }, [
+            return h('div', {style: {width: '100%', height: '100%', position: 'relative'}}, [
               // 加载动画
               this.isLoading
-                  ? h('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' } }, '加载中...')
+                  ? h('div', {
+                    style: {
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }
+                  }, '加载中...')
                   : null,
               // iframe
               h('iframe', {
                 src: this.iframeUrl,
-                style: { width: '100%', height: '100%', border: 'none' },
+                style: {width: '100%', height: '100%', border: 'none'},
                 onLoad: this.onIframeLoad,
                 ref: 'iframe',
               }),
@@ -311,17 +418,7 @@ const handleMenuSelect = (index: string) => {
         });
       } else {
         // 处理内部 Vue 组件
-        component = defineAsyncComponent(() =>
-            import(`@/views${index}.vue`)
-                .then((module) => {
-                  console.log('组件加载成功:', module.default);
-                  return module;
-                })
-                .catch((err) => {
-                  console.error('组件加载失败:', err);
-                  throw err;
-                })
-        );
+        component = defineAsyncComponent(() => import(`@/views${index}.vue`))
       }
 
       // 将组件添加到 tabs
@@ -344,6 +441,10 @@ const removeTab = (tabName: string) => {
   if (tabName === activeTab.value) {
     activeTab.value = tabs.value[0]?.name || '';
   }
+};
+
+const refreshPage = () => {
+  window.location.reload();
 };
 
 // 防抖函数

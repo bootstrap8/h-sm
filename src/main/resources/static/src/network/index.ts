@@ -2,6 +2,7 @@ import axios from 'axios'
 import store from '@/store'
 import { ElLoading } from 'element-plus'
 import router from "@/router"
+import {msg} from '@/utils/Utils';
 
 console.log('环境信息: ', process.env.NODE_ENV);
 
@@ -51,8 +52,12 @@ export default (config: any) => {
     // 关闭过度效果
     loadingInstance.close()
     if (error.response.status == 401) {
+      msg('会话已失效，请重新登录', 'warning')
       router.push({path: '/login'})
-      return Promise.resolve({data: {state: 'ERROR', body: '会话失效'}});
+      return Promise.resolve({data: {state: 'ERROR', body: '会话已失效，请重新登录'}});
+    }else if(error.response.status >= 500){
+      router.push({path: '/500'})
+      return Promise.resolve({data: {state: 'ERROR', body: '服务端错误'}});
     }
     return Promise.reject(error);
   });

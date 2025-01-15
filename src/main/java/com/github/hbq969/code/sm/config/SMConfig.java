@@ -12,43 +12,43 @@ import org.springframework.context.annotation.Bean;
 
 public class SMConfig {
 
-    @ConditionalOnProperty(prefix = "login", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
     @Bean("h-sm-LoginConfig")
     LoginConfig loginConfig() {
         return new LoginConfig();
     }
 
-    @ConditionalOnProperty(prefix = "login", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
     @Bean("h-sm-SessionInterceptor")
     SessionInterceptor sessionInterceptor() {
         return new SessionInterceptor();
     }
 
-    @ConditionalOnProperty(prefix = "login", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
     @Bean("h-sm-LoginService")
     LoginService loginService() {
         return new LoginServiceImpl();
     }
 
-    @ConditionalOnProperty(prefix = "login", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
     @Bean("h-sm-LoginCtrl")
     LoginCtrl loginCtrl() {
         return new LoginCtrl();
     }
 
-    @ConditionalOnProperty(prefix = "login", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
     @Bean("h-sm-MenuCtrl")
     MenuCtrl menuCtrl() {
         return new MenuCtrl();
     }
 
-    @ConditionalOnProperty(prefix = "login", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
     @Bean("h-sm-RoleCtrl")
     RoleCtrl roleCtrl() {
         return new RoleCtrl();
     }
 
-    @ConditionalOnProperty(prefix = "login", name = "enabled", havingValue = "true")
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
     @Bean("h-sm-UserCtrl")
     UserCtrl userCtrl() {
         return new UserCtrl();

@@ -52,7 +52,7 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
         } else {
             HttpSession hs = loginService.getSession(sid);
             if (hs == null) {
-            } else if (null != hs.getAttribute("user")) {
+            } else if (null != hs.getAttribute("h-sm-user")) {
                 result = true;
                 if (currentTimeMillis == 0 || System.currentTimeMillis() - currentTimeMillis > 5000) {
                     Cookie jsessionCookie = new Cookie("JSESSIONID", jsid);
@@ -72,8 +72,13 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
     }
 
     private static void invalidateSession(HttpServletResponse response) throws IOException {
+        Cookie jsessionCookie = new Cookie("JSESSIONID", null);
+        jsessionCookie.setMaxAge(5);
+        jsessionCookie.setPath("/");
+        jsessionCookie.setHttpOnly(true);
+        response.addCookie(jsessionCookie);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.getWriter().write(GsonUtils.toJson(Result.fail("会话失效")));
+//        response.getWriter().write(GsonUtils.toJson(Result.fail("会话失效")));
     }
 
     @Override
