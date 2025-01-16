@@ -2,11 +2,14 @@
 import {
   Edit
 } from '@element-plus/icons-vue'
-import {ref, reactive, onMounted, computed} from 'vue'
+import {ref, reactive, onMounted, computed, provide, inject} from 'vue'
 import axios from '@/network'
 import {msg} from '@/utils/Utils'
 import type {FormInstance, FormRules} from 'element-plus'
 import router from "@/router";
+
+const session = inject('session')
+const user = session.user
 
 const formLabelWidth = ref('140px')
 const form = reactive({
@@ -43,7 +46,7 @@ const queryMenuList = () => {
       data.menus = res.data.body.menus.list
       data.total = res.data.body.menus.total
       data.level1Menus = res.data.body.level1Menus
-      data.level1Menus.unshift({name: '-', menuDesc:'根菜单', url: '/', parentId: '', menuLevel: 0})
+      data.level1Menus.unshift({name: '-', menuDesc: '根菜单', url: '/', parentId: '', menuLevel: 0})
       data.iconList = res.data.body.iconList
     } else {
       msg(res.data.errorMessage, 'warning')
@@ -198,13 +201,13 @@ const _ = (window as any).ResizeObserver;
       </el-form-item>
       <el-form-item>
         <el-button type="primary" size="small" @click="queryMenuList()">查询</el-button>
-        <el-button type="success" :icon="Edit" circle @click="showMenuAddDialog()" title="新增菜单"/>
+        <el-button type="success" :icon="Edit" circle @click="showMenuAddDialog()" title="新增菜单" v-if="user.roleName=='ADMIN' || user.roleName=='MANAGE'"/>
       </el-form-item>
 
       <el-divider content-position="left">查询结果</el-divider>
       <el-table :data="data.menus" style="width: 100%" :border="true" table-layout="fixed" :stripe="true"
                 size="small" :highlight-current-row="true" :header-cell-style="headerCellStyle">
-        <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center">
+        <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center" v-if="user.roleName=='ADMIN' || user.roleName=='MANAGE'">
           <template #default="scope">
             <el-button link type="primary" size="small" @click="showMenuEditDialog(scope)">编辑
             </el-button>

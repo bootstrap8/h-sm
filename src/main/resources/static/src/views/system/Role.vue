@@ -2,11 +2,13 @@
 import {
   Edit
 } from '@element-plus/icons-vue'
-import {ref, reactive, onMounted, computed} from 'vue'
+import {ref, reactive, onMounted, computed, provide, inject} from 'vue'
 import axios from '@/network'
 import {msg} from '@/utils/Utils'
 import type {FormInstance, FormRules} from 'element-plus'
 import router from "@/router";
+
+const user = inject('session').user
 
 const formLabelWidth = ref('140px')
 const form = reactive({
@@ -167,7 +169,7 @@ const showMenuConfigDialog = (scope) => {
     if (res.data.state == 'OK') {
       data.menus = res.data.body.all
       roleForm2.menus = res.data.body.conf
-      console.log('all: %o, conf: %o',data.menus,roleForm2.menus)
+      console.log('all: %o, conf: %o', data.menus, roleForm2.menus)
     } else {
       msg(res.data.errorMessage, 'warning')
     }
@@ -182,7 +184,6 @@ const headerCellStyle = () => {
 }
 
 onMounted(() => {
-  console.log('页面加载后')
   queryRoleList()
 });
 
@@ -209,38 +210,25 @@ const _ = (window as any).ResizeObserver;
 
 <template>
   <div class="container">
-    <el-divider content-position="left">查询条件</el-divider>
-    <el-form :model="form" size="small" label-position="right" inline-message inline>
-      <el-form-item label="角色名称" prop="name">
-        <el-input v-model="form.name" placeholder="请输入..." type="text"/>
-      </el-form-item>
-      <el-form-item label="角色描述" prop="desc">
-        <el-input v-model="form.desc" placeholder="请输入..." type="text"/>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" size="small" @click="queryRoleList()">查询</el-button>
-        <el-button type="success" :icon="Edit" circle @click="showRoleAddDialog()" title="新增角色"/>
-      </el-form-item>
-    </el-form>
-
-    <el-divider content-position="left">查询结果</el-divider>
     <el-table :data="data.roles" style="width: 100%" :border="true" table-layout="fixed" :stripe="true"
               size="small" :highlight-current-row="true" :header-cell-style="headerCellStyle">
-      <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center">
+      <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center" v-if="user.roleName=='ADMIN'">
         <template #default="scope">
-          <el-button link type="primary" size="small" @click="showRoleEditDialog(scope)"
-                     :disabled="scope.row.name=='ADMIN'">编辑
+          <el-button link type="primary" size="small" @click="showRoleEditDialog(scope)">编辑
           </el-button>
           <el-popconfirm title="删除角色会把关联的账号全部删除，请确认是否删除?" @confirm="deleteRole(scope)"
                          icon-color="red"
                          confirm-button-type="danger">
             <template #reference>
-              <el-button link type="danger" size="small" :disabled="scope.row.name=='ADMIN'">删除</el-button>
+              <el-button link type="danger" size="small">删除</el-button>
             </template>
           </el-popconfirm>
-          <el-button link type="primary" size="small" @click="showMenuConfigDialog(scope)"
-                     :disabled="scope.row.name=='ADMIN'">配置菜单
-          </el-button>
+          <el-button link type="primary" size="small" @click="showMenuConfigDialog(scope)">配置菜单</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center" v-else-if="user.roleName=='MANAGE'">
+        <template #default="scope">
+          <el-button link type="primary" size="small" @click="showMenuConfigDialog(scope)">配置菜单</el-button>
         </template>
       </el-table-column>
       <el-table-column prop="name" label="名称" :show-overflow-tooltip="true" header-align="center"
@@ -257,7 +245,11 @@ const _ = (window as any).ResizeObserver;
                    @size-change="queryRoleList()"
                    @current-change="queryRoleList()" @prev-click="queryRoleList()" @next-click="queryRoleList()"
                    :small="true" :background="true"
-                   :page-sizes="[5, 10, 20, 50, 100]"/>
+                   :page-sizes="[5, 10, 20, 50, 100]" v-if="user.roleName=='ADMIN'"/>
+    <div class="addBtn">
+      <el-button :icon="Edit" size="small" round @click="showRoleAddDialog()" v-if="user.roleName=='ADMIN'">添加新角色
+      </el-button>
+    </div>
 
     <el-dialog v-model="dialogFormVisible" :title="dialogTitle" draggable>
       <el-form :model="roleForm" label-position="right" size="small" :inline="false" ref="formRef" :rules="rules"
@@ -308,5 +300,10 @@ const _ = (window as any).ResizeObserver;
   overflow-y: hidden;
   width: 96%;
   height: calc(100vh + 60px);
+}
+
+.addBtn {
+  margin-top: 5px;
+  text-align: center;
 }
 </style>

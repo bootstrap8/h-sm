@@ -12,8 +12,10 @@ import com.github.hbq969.code.sm.login.dao.entity.RoleMenuEntity;
 import com.github.hbq969.code.sm.login.dao.entity.UserEntity;
 import com.github.hbq969.code.sm.login.model.LoginInfo;
 import com.github.hbq969.code.sm.login.model.PasswordModify;
+import com.github.hbq969.code.sm.login.model.ResetPassword;
 import com.github.hbq969.code.sm.login.model.UserInfo;
 import com.github.hbq969.code.sm.login.service.LoginService;
+import com.github.hbq969.code.sm.login.session.UserContext;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.cache.Cache;
@@ -128,6 +130,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public PageInfo<RoleEntity> queryRoleList(int pageNum, int pageSize, RoleEntity q) {
+        q.setName(UserContext.get().getRoleName());
         q.withApp(context);
         if (pageNum < 0) {
             PageInfo<RoleEntity> pg = new PageInfo<>(loginDao.queryRoleList(q));
@@ -141,6 +144,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void saveRoleEntity(RoleEntity entity) {
+        entity.permit();
         entity.initial();
         entity.withApp(context);
         loginDao.saveRoleEntity(entity);
@@ -148,6 +152,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void updateRoleEntity(RoleEntity entity) {
+        entity.permit();
         entity.update();
         entity.withApp(context);
         loginDao.updateRoleEntity(entity);
@@ -155,6 +160,10 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void deleteRoleEntity(String roleName) {
+        UserInfo ui = UserContext.get();
+        if (ui == null || !StringUtils.equals("ADMIN", ui.getRoleName())) {
+            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+        }
         loginDao.deleteMenuEntities(app, roleName);
         loginDao.deleteUserEntities(app, roleName);
         loginDao.deleteRoleEntity(app, roleName);
@@ -167,6 +176,8 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public PageInfo<UserEntity> queryUserList(int pageNum, int pageSize, UserEntity q) {
+        q.setRoleName(UserContext.get().getRoleName());
+        q.setUsername(UserContext.get().getUserName());
         q.setApp(app);
         PageInfo<UserEntity> pg = PageHelper.startPage(pageNum, pageSize).doSelectPageInfo(() -> loginDao.queryUserList(q));
         pg.getList().forEach(e -> e.convertDict(context));
@@ -175,6 +186,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void saveUserEntity(UserEntity entity) {
+        entity.permit();
         entity.initial();
         entity.setApp(app);
         entity.hash(encoder);
@@ -183,6 +195,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void updateUserEntity(UserEntity entity) {
+        entity.permit();
         entity.update();
         entity.setApp(app);
         loginDao.updateUserEntity(entity);
@@ -192,11 +205,19 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void deleteUserEntity(String username) {
+        UserInfo ui = UserContext.get();
+        if (null == ui || !StringUtils.equals("ADMIN", ui.getRoleName())) {
+            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+        }
         loginDao.deleteUserEntity(app, username);
     }
 
     @Override
     public void updatePassword(PasswordModify passwordModify) {
+        UserInfo ui = UserContext.get();
+        if (null == ui || !StringUtils.equals(ui.getUserName(), passwordModify.getUsername())) {
+            throw new UnsupportedOperationException("不能修改别人的密码");
+        }
         UserEntity ue = loginDao.queryUserEntity(app, passwordModify.getUsername());
         if (ue == null) {
             throw new UnsupportedOperationException("用户不存在");
@@ -206,6 +227,22 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         }
         passwordModify.hash(encoder);
         loginDao.updateUserPassword(app, passwordModify);
+    }
+
+    @Override
+    public void resetPassword(ResetPassword rp) {
+        UserInfo ui = UserContext.get();
+        if (null == ui || !StringUtils.equals("ADMIN", ui.getRoleName())) {
+            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+        }
+        if (!rp.same()) {
+            throw new IllegalArgumentException("两次密码不一致，请检查");
+        }
+        PasswordModify modify = new PasswordModify();
+        modify.setUsername(rp.getUsername());
+        modify.setNewPassword(rp.getPassword1());
+        modify.hash(encoder);
+        loginDao.updateUserPassword(app, modify);
     }
 
     @Override
@@ -240,6 +277,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void updateMenuEntity(MenuEntity entity) {
+        entity.permit();
         entity.update(context);
         entity.setApp(app);
         loginDao.updateMenuEntity(entity);
@@ -249,6 +287,10 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void deleteMenuEntity(String name) {
+        UserInfo ui = UserContext.get();
+        if (null == ui || (!StringUtils.equals("ADMIN", ui.getRoleName()) && MenuEntity.SYSTEM_MENUS.contains(name))) {
+            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+        }
         loginDao.deleteMenuEntity(app, name);
         loginDao.deleteMenuForRole(app, name);
         List<MenuEntity> subMenus = loginDao.querySubMenuList(app, name);
@@ -266,6 +308,11 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Override
     public void updateRoleMenus(RoleMenuEntity roleMenuEntity) {
+        UserInfo ui = UserContext.get();
+        if (!StringUtils.equals("ADMIN", ui.getRoleName())
+                && !StringUtils.equals(ui.getRoleName(), roleMenuEntity.getRole().getName())) {
+            throw new UnsupportedOperationException("不允许配置别的角色菜单");
+        }
         loginDao.deleteMenuEntities(app, roleMenuEntity.getRole().getName());
         context.getBean(JdbcTemplate.class).batchUpdate("insert into h_role_menus(app,role_name,menu_name) values(?,?,?)", new BatchPreparedStatementSetter() {
             @Override

@@ -20,7 +20,7 @@
               inactive-text="左右布局"
               @change="router.push({path:`/${layout}`})"
           />
-<!--          <TimeComponent/>-->
+          <!--          <TimeComponent/>-->
           <span style="margin-right: 10px;margin-left:0px; padding:0;font-size: 0.6em;">
             {{ data.user.userName }}
           </span>
@@ -49,7 +49,7 @@
               popper-effect="dark"
               style="height: calc(100vh - 100px); overflow-y: auto;overflow-x:hidden"
           >
-            <template v-for="menu in data.adminMenus" v-if="data.user.isAdmin">
+            <template v-for="menu in data.adminMenus" v-if="data.user.roleName=='ADMIN'">
               <el-sub-menu v-if="menu.menus && menu.menus.length > 0" :index="menu.url">
                 <template #title>
                   <el-icon>
@@ -215,8 +215,8 @@
 :deep(.el-tabs__item) {
   background-color: #fafafa; /* 未选中背景色 */
   position: relative; /* 为伪元素定位 */
-  -webkit-transition: all .3s cubic-bezier(.645,.045,.355,1);
-  transition: all .3s cubic-bezier(.645,.045,.355,1);
+  -webkit-transition: all .3s cubic-bezier(.645, .045, .355, 1);
+  transition: all .3s cubic-bezier(.645, .045, .355, 1);
 }
 
 :deep(.el-tabs__item::after) {
@@ -253,21 +253,25 @@ import {
   defineComponent,
   h,
   nextTick,
-  computed
+  computed,
+  provide,
+  inject
 } from 'vue';
 import axios from '@/network';
 import {msg} from '@/utils/Utils';
 import router from '@/router'
 import TimeComponent from '@/components/TimeComponent.vue';
 
-const layout=ref('main_left')
+const layout = ref('main_left')
 
 const data = reactive({
   currentPage: '主页',
   user: {},
   adminMenus: [],
-  menus: []
+  menus: [],
+  menuEntry: {}
 })
+provide('session',data)
 const menuMap = reactive({})
 const logout = () => {
   axios({
@@ -292,10 +296,17 @@ onMounted(() => {
 
       let user = res.data.body.user
       data.user.userName = user.userName
-      data.user.isAdmin = user.admin
+      data.user.roleName = user.roleName
       data.menus = user.menus
+      if(data.menus && data.menus.length>0){
+        data.menus.forEach(m=>{
+          data.menuEntry[m.name]=m.menuDesc
+          if(m.menus && m.menus.length>0){
+            m.menus.forEach(sm=>data.menuEntry[sm.name]=sm.menuDesc)
+          }
+        })
+      }
       data.adminMenus = res.data.body.allMenus
-
       if (data.adminMenus && data.adminMenus.length > 0) {
         data.adminMenus.forEach(item => {
           menuMap[item.url] = item.menuDesc

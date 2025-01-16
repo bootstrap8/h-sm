@@ -4,64 +4,19 @@ import {
 } from '@element-plus/icons-vue'
 import {ref, reactive, onMounted, computed} from 'vue'
 import axios from '@/network'
-import {msg} from '@/utils/Utils'
+import {msg, deobfuscate, encryptAES} from '@/utils/Utils'
 import type {FormInstance, FormRules} from 'element-plus'
 import JSEncrypt from 'jsencrypt'
 import CryptoJS from "crypto-js"
 import router from "@/router";
 
-function obfuscate(input, key) {
-  let result = '';
-  for (let i = 0; i < input.length; i++) {
-    result += String.fromCharCode(input.charCodeAt(i) ^ key);
-  }
-  return result;
-}
-
-// XOR 还原算法（解密）
-function deobfuscate(input, key) {
-  return obfuscate(input, key);
-}
-
 const obfs = "969";
 const key = CryptoJS.enc.Utf8.parse(deobfuscate("΍ΊϻΌΌϱϰϺϸΌϽϺϽΈϽϽ", obfs));
 const iv = key
 
-//解密方法
-const decryptAES = (word) => {
-  let base64 = CryptoJS.enc.Base64.parse(word);
-  let src = CryptoJS.enc.Base64.stringify(base64);
-  // 解密模式为CBC，补码方式为PKCS5Padding（也就是PKCS7）
-  let decrypt = CryptoJS.AES.decrypt(src, key, {
-    iv: iv,
-    mode: CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7
-  });
-  var decryptedStr = decrypt.toString(CryptoJS.enc.Utf8);
-  return decryptedStr.toString();
-}
-
-//加密方法
-const encryptAES = (word) => {
-  let srcs = CryptoJS.enc.Utf8.parse(word);
-  // 加密模式为CBC，补码方式为PKCS5Padding（也就是PKCS7）
-  let encrypted = CryptoJS.AES.encrypt(srcs, key, {
-    iv: iv,
-    mode: CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7
-  });
-  //返回base64
-  return CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
-}
-
 const data = reactive({
   actions: []
 });
-
-const headerCellStyle = () => {
-  // 添加表头颜色
-  return {backgroundColor: '#f5f5f5', color: '#333', fontWeight: 'bold'};
-}
 
 onMounted(() => {
   console.log('页面加载后')
@@ -95,7 +50,7 @@ function confirmAnswer() {
       username: username.value,
       password: password.value
     }
-    const body = encryptAES(JSON.stringify(form))
+    const body = encryptAES(JSON.stringify(form),key,iv)
     axios({
       url: '/system/login',
       method: 'post',

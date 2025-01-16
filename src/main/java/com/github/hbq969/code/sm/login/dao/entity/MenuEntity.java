@@ -4,12 +4,16 @@ import com.github.hbq969.code.common.spring.context.SpringContext;
 import com.github.hbq969.code.common.utils.FormatTime;
 import com.github.hbq969.code.dict.service.api.DictAware;
 import com.github.hbq969.code.dict.service.api.DictModel;
+import com.github.hbq969.code.sm.login.model.UserInfo;
+import com.github.hbq969.code.sm.login.session.UserContext;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author : hbq969@gmail.com
@@ -32,6 +36,12 @@ public class MenuEntity implements DictModel, DictAware {
     private Long updatedAt;
     private String fmtUpdatedAt;
     private List<MenuEntity> menus;
+    public static Set<String> SYSTEM_MENUS = new HashSet() {{
+        add("system");
+        add("Role");
+        add("User");
+        add("Menu");
+    }};
 
     @Override
     public void convertDict(SpringContext context) {
@@ -79,6 +89,13 @@ public class MenuEntity implements DictModel, DictAware {
             menus = new ArrayList<>();
         }
         menus.add(menuEntity);
+    }
+
+    public void permit() {
+        UserInfo ui = UserContext.get();
+        if (null == ui || (!StringUtils.equals("ADMIN", ui.getRoleName()) && SYSTEM_MENUS.contains(name))) {
+            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+        }
     }
 }
 

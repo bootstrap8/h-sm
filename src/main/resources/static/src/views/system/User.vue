@@ -2,11 +2,18 @@
 import {
   Edit
 } from '@element-plus/icons-vue'
-import {ref, reactive, onMounted, computed} from 'vue'
+import {ref, reactive, onMounted, computed, provide, inject} from 'vue'
 import axios from '@/network'
-import {msg} from '@/utils/Utils'
+import {msg, deobfuscate, encryptAES} from '@/utils/Utils'
 import type {FormInstance, FormRules} from 'element-plus'
 import router from "@/router";
+import CryptoJS from "crypto-js"
+
+const obfs = "969";
+const key = CryptoJS.enc.Utf8.parse(deobfuscate("΍ΊϻΌΌϱϰϺϸΌϽϺϽΈϽϽ", obfs));
+const iv = key
+
+const user = inject('session').user
 
 const formLabelWidth = ref('140px')
 const form = reactive({
@@ -187,7 +194,8 @@ const modifyPassword = async (formEl: FormInstance | undefined) => {
       axios({
         url: '/users/user/pass',
         method: 'put',
-        data: passForm
+        headers: {'Content-Type': 'application/json'},
+        data: encryptAES(JSON.stringify(passForm), key, iv)
       }).then((res: any) => {
         if (res.data.state == 'OK') {
           msg(res.data.body, 'success')
@@ -203,8 +211,62 @@ const modifyPassword = async (formEl: FormInstance | undefined) => {
 }
 
 const showPasswordModifyDialog = (scope) => {
-  passForm.username=scope.row.username
+  passForm.username = scope.row.username
   dialogFormVisible2.value = true
+}
+
+const dialogFormVisible3 = ref(false)
+const resetForm = reactive({
+  username: '',
+  password1: '',
+  password2: ''
+})
+const formRef3 = ref<FormInstance>()
+const rules3 = reactive<FormRules>({
+  password1: [
+    {required: true, message: '不能为空', trigger: 'blur'}
+  ],
+  password2: [
+    {required: true, message: '不能为空', trigger: 'blur'},
+    {
+      required: true, trigger: 'blur', validator: (rule: any, value: any, callback: any) => {
+        if (resetForm.password1 != resetForm.password2) {
+          callback(new Error('两次输入的密码不一致'))
+        } else {
+          callback()
+        }
+      }
+    }
+  ]
+})
+const showPasswordResetDialog = (scope) => {
+  dialogFormVisible3.value = true
+  resetForm.username = scope.row.username
+  resetForm.password1 = ''
+  resetForm.password2 = ''
+}
+
+const resetPassword = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      axios({
+        url: '/users/user/reset',
+        method: 'post',
+        headers: {'Content-Type': 'application/json'},
+        data: encryptAES(JSON.stringify(resetForm), key, iv),
+      }).then((res: any) => {
+        if (res.data.state == 'OK') {
+          msg(res.data.body, 'success')
+          dialogFormVisible3.value = false
+        } else {
+          msg(res.data.errorMessage, 'warning')
+        }
+      }).catch((err: Error) => {
+        msg('请求异常', 'error')
+      })
+    }
+  })
 }
 
 const headerCellStyle = () => {
@@ -213,7 +275,6 @@ const headerCellStyle = () => {
 }
 
 onMounted(() => {
-  console.log('页面加载后')
   queryUserList()
 });
 
@@ -240,26 +301,10 @@ const _ = (window as any).ResizeObserver;
 
 <template>
   <div class="container">
-    <el-divider content-position="left">查询条件</el-divider>
-    <el-form :model="form" size="small" label-position="right" inline-message inline>
-      <el-form-item label="用户名" prop="username">
-        <el-input v-model="form.username" placeholder="请输入..." type="text"/>
-      </el-form-item>
-      <el-form-item label="角色" prop="roleId">
-        <el-select v-model="form.roleId" placeholder="请选择" size="small">
-          <el-option :key="role.name" :label="role.name" :value="role.name" v-for="role in data.roles"/>
-        </el-select>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" size="small" @click="queryUserList()">查询</el-button>
-        <el-button type="success" :icon="Edit" circle @click="showUserAddDialog()" title="新增用户"/>
-      </el-form-item>
-    </el-form>
-
-    <el-divider content-position="left">查询结果</el-divider>
     <el-table :data="data.users" style="width: 100%" :border="true" table-layout="fixed" :stripe="true"
               size="small" :highlight-current-row="true" :header-cell-style="headerCellStyle">
-      <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center">
+      <el-table-column fixed="left" label="操作" width="240" header-align="center" align="center"
+                       v-if="user.roleName=='ADMIN'">
         <template #default="scope">
           <el-button link type="primary" size="small" @click="showUserEditDialog(scope)">编辑</el-button>
           <el-popconfirm title="你确定要删除本条记录吗?" @confirm="deleteUser(scope)"
@@ -270,6 +315,12 @@ const _ = (window as any).ResizeObserver;
               </el-button>
             </template>
           </el-popconfirm>
+          <el-button link type="primary" size="small" @click="showPasswordModifyDialog(scope)">修改密码</el-button>
+          <el-button link type="primary" size="small" @click="showPasswordResetDialog(scope)">重置密码</el-button>
+        </template>
+      </el-table-column>
+      <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center" v-else>
+        <template #default="scope">
           <el-button link type="primary" size="small" @click="showPasswordModifyDialog(scope)">修改密码</el-button>
         </template>
       </el-table-column>
@@ -287,7 +338,11 @@ const _ = (window as any).ResizeObserver;
                    @size-change="queryUserList()"
                    @current-change="queryUserList()" @prev-click="queryUserList()" @next-click="queryUserList()"
                    :small="true" :background="true"
-                   :page-sizes="[5, 10, 20, 50, 100]"/>
+                   :page-sizes="[5, 10, 20, 50, 100]" v-if="user.roleName=='ADMIN'"/>
+    <div class="addBtn">
+      <el-button :icon="Edit" size="small" round @click="showUserAddDialog()" v-if="user.roleName=='ADMIN'">添加新用户
+      </el-button>
+    </div>
 
     <el-dialog v-model="dialogFormVisible" :title="dialogTitle" draggable>
       <el-form :model="userForm" label-position="right" size="small" :inline="false" ref="formRef" :rules="rules"
@@ -335,6 +390,24 @@ const _ = (window as any).ResizeObserver;
                 </span>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="dialogFormVisible3" title="重置密码">
+      <el-form :model="resetForm" label-position="right" size="small" :inline="false" ref="formRef3" :rules="rules3"
+               label-width="20%">
+        <el-form-item label="新密码：" prop="password1">
+          <el-input v-model="resetForm.password1" type="password"/>
+        </el-form-item>
+        <el-form-item label="二次确认：" prop="password2">
+          <el-input v-model="resetForm.password2" type="password"/>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+                <span class="dialog-footer">
+                  <el-button @click="dialogFormVisible3 = false">取消</el-button>
+                  <el-button type="primary" @click="resetPassword(formRef3)">保存</el-button>
+                </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -346,5 +419,10 @@ const _ = (window as any).ResizeObserver;
   overflow-y: hidden;
   width: 96%;
   height: calc(100vh + 60px);
+}
+
+.addBtn {
+  margin-top: 5px;
+  text-align: center;
 }
 </style>

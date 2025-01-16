@@ -4,7 +4,10 @@ import com.github.hbq969.code.common.spring.context.SpringContext;
 import com.github.hbq969.code.common.utils.FormatTime;
 import com.github.hbq969.code.dict.service.api.DictAware;
 import com.github.hbq969.code.dict.service.api.DictModel;
+import com.github.hbq969.code.sm.login.model.UserInfo;
+import com.github.hbq969.code.sm.login.session.UserContext;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author : hbq969@gmail.com
@@ -42,5 +45,12 @@ public class RoleEntity implements DictModel, DictAware {
 
     public void withApp(SpringContext context) {
         this.app = context.getProperty("spring.application.name");
+    }
+
+    public void permit() {
+        UserInfo ui = UserContext.get();
+        if (ui == null || !StringUtils.equals("ADMIN", ui.getRoleName())) {
+            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+        }
     }
 }

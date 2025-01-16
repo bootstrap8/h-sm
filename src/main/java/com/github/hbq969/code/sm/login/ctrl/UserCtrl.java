@@ -1,9 +1,11 @@
 package com.github.hbq969.code.sm.login.ctrl;
 
+import com.github.hbq969.code.common.encrypt.ext.config.Decrypt;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
 import com.github.hbq969.code.sm.login.dao.entity.UserEntity;
 import com.github.hbq969.code.sm.login.model.PasswordModify;
+import com.github.hbq969.code.sm.login.model.ResetPassword;
 import com.github.hbq969.code.sm.login.service.LoginService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -56,8 +58,18 @@ public class UserCtrl implements ICommonControl {
     @ApiOperation("修改密码")
     @RequestMapping(path = "/user/pass", method = RequestMethod.PUT)
     @ResponseBody
+    @Decrypt
     public ReturnMessage<?> updatePass(@RequestBody PasswordModify modify) {
         loginService.updatePassword(modify);
         return ReturnMessage.success("修改成功");
+    }
+
+    @ApiOperation("重置密码")
+    @RequestMapping(path = "/user/reset", method = RequestMethod.POST)
+    @ResponseBody
+    @Decrypt
+    public ReturnMessage<?> resetPassword(@RequestBody ResetPassword rp) {
+        loginService.resetPassword(rp);
+        return ReturnMessage.success("重置成功");
     }
 }

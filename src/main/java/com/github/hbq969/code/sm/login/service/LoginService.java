@@ -1,6 +1,7 @@
 package com.github.hbq969.code.sm.login.service;
 
 import com.github.hbq969.code.sm.login.dao.entity.*;
+import com.github.hbq969.code.sm.login.model.ResetPassword;
 import com.github.hbq969.code.sm.login.model.UserInfo;
 import com.github.hbq969.code.sm.login.model.LoginInfo;
 import com.github.hbq969.code.sm.login.model.PasswordModify;
@@ -34,6 +35,8 @@ public interface LoginService {
     void deleteUserEntity(String username);
 
     void updatePassword(PasswordModify passwordModify);
+
+    void resetPassword(ResetPassword rp);
 
     PageInfo<MenuEntity> queryMenuList(int pageNum, int pageSize, MenuEntity q);
 

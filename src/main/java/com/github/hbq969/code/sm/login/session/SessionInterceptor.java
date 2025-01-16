@@ -4,10 +4,14 @@ import com.github.hbq969.code.common.restful.Result;
 import com.github.hbq969.code.common.spring.interceptor.AbstractHandlerInterceptor;
 import com.github.hbq969.code.common.utils.GsonUtils;
 import com.github.hbq969.code.sm.config.LoginConfig;
+import com.github.hbq969.code.sm.login.model.UserInfo;
 import com.github.hbq969.code.sm.login.service.LoginService;
 import com.github.hbq969.code.sm.login.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
@@ -54,6 +58,8 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
             if (hs == null) {
             } else if (null != hs.getAttribute("h-sm-user")) {
                 result = true;
+                UserInfo ui = (UserInfo) hs.getAttribute("h-sm-user");
+                UserContext.set(ui);
                 if (currentTimeMillis == 0 || System.currentTimeMillis() - currentTimeMillis > 5000) {
                     Cookie jsessionCookie = new Cookie("JSESSIONID", jsid);
                     jsessionCookie.setMaxAge((int) conf.getCookieMaxAgeSec());
@@ -71,6 +77,11 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
         return result;
     }
 
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        UserContext.remove();
+    }
+
     private static void invalidateSession(HttpServletResponse response) throws IOException {
         Cookie jsessionCookie = new Cookie("JSESSIONID", null);
         jsessionCookie.setMaxAge(5);
@@ -78,12 +89,15 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
         jsessionCookie.setHttpOnly(true);
         response.addCookie(jsessionCookie);
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-//        response.getWriter().write(GsonUtils.toJson(Result.fail("会话失效")));
     }
 
     @Override
     public int order() {
         return Integer.MIN_VALUE + 1;
+    }
+
+    public static void main(String[] args) {
+        log.info("{}", RandomStringUtils.random(8, true, true));
     }
 
 }

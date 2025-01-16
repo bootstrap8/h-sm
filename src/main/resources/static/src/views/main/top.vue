@@ -18,7 +18,7 @@
             </el-icon>
             <template #title>H-SM</template>
           </el-menu-item>
-          <template v-for="menu in data.adminMenus" v-if="data.user.isAdmin">
+          <template v-for="menu in data.adminMenus" v-if="data.user.roleName=='ADMIN'">
             <el-sub-menu v-if="menu.menus && menu.menus.length > 0" :index="menu.url">
               <template #title>
                 <el-icon>
@@ -129,7 +129,9 @@ import {
   resolveComponent,
   defineComponent,
   h,
-  nextTick
+  nextTick,
+  provide,
+  inject
 } from 'vue';
 import router from '@/router'
 import axios from '@/network'
@@ -142,9 +144,10 @@ const data = reactive({
   currentPage: '主页',
   user: {},
   adminMenus: [],
-  menus: []
+  menus: [],
+  menuEntry: {}
 })
-
+provide('session',data)
 const menuMap = reactive({})
 const logout = () => {
   axios({
@@ -169,10 +172,17 @@ onMounted(() => {
 
       let user = res.data.body.user
       data.user.userName = user.userName
-      data.user.isAdmin = user.admin
+      data.user.roleName = user.roleName
       data.menus = user.menus
+      if(data.menus && data.menus.length>0){
+        data.menus.forEach(m=>{
+          data.menuEntry[m.name]=m.menuDesc
+          if(m.menus && m.menus.length>0){
+            m.menus.forEach(sm=>data.menuEntry[sm.name]=sm.menuDesc)
+          }
+        })
+      }
       data.adminMenus = res.data.body.allMenus
-
       if (data.adminMenus && data.adminMenus.length > 0) {
         data.adminMenus.forEach(item => {
           menuMap[item.url] = item.menuDesc

@@ -12,13 +12,8 @@
         from h_roles
         <where>
             and app = #{app}
-            <if test="name!=null and name!=''">
-                <bind name="nameLike" value="'%' + name + '%'"/>
-                and name like #{nameLike}
-            </if>
-            <if test="desc!=null and desc!=''">
-                <bind name="descLike" value="'%' + desc + '%'"/>
-                and description like #{descLike}
+            <if test="name!='ADMIN'">
+                and name = #{name}
             </if>
         </where>
     </select>
@@ -95,13 +90,9 @@
             a.role_name=b.name
             and a.app=b.app
             and a.app = #{app}
-            <if test="username!=null and username!=''">
-                <bind name="usernameLike" value="'%' + username + '%'"/>
-                and a.username like #{usernameLike}
-            </if>
-            <if test="roleName!=null and roleName!=''">
-                <bind name="roleNameLike" value="'%' + roleName + '%'"/>
-                and a.role_name like #{roleNameLike}
+            <if test="roleName!='ADMIN'">
+                and a.role_name = #{roleName}
+                and a.username = #{username}
             </if>
         </where>
     </select>
