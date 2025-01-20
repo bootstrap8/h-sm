@@ -1,5 +1,6 @@
 package com.github.hbq969.code.sm.login.ctrl;
 
+import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
 import com.github.hbq969.code.dict.service.api.impl.MapDictHelperImpl;
@@ -75,6 +76,7 @@ public class MenuCtrl implements ICommonControl {
     @ApiOperation("新增菜单")
     @RequestMapping(path = "/menu", method = RequestMethod.POST)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> saveMenu(@RequestBody MenuEntity menu) {
         loginService.saveMenuEntity(menu);
         return ReturnMessage.success("保存成功");
@@ -83,6 +85,7 @@ public class MenuCtrl implements ICommonControl {
     @ApiOperation("修改菜单")
     @RequestMapping(path = "/menu", method = RequestMethod.PUT)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> updateMenu(@RequestBody MenuEntity menu) {
         loginService.updateMenuEntity(menu);
         return ReturnMessage.success("修改成功");
@@ -91,6 +94,7 @@ public class MenuCtrl implements ICommonControl {
     @ApiOperation("删除菜单")
     @RequestMapping(path = "/menu", method = RequestMethod.DELETE)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> deleteMenu(@RequestParam(name = "name") String name) {
         loginService.deleteMenuEntity(name);
         return ReturnMessage.success("删除成功");

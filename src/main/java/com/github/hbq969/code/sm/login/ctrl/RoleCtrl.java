@@ -1,5 +1,6 @@
 package com.github.hbq969.code.sm.login.ctrl;
 
+import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
 import com.github.hbq969.code.sm.login.dao.entity.MenuEntity;
@@ -46,6 +47,7 @@ public class RoleCtrl implements ICommonControl {
     @ApiOperation("新增角色")
     @RequestMapping(path = "/role", method = RequestMethod.POST)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<String> saveRole(@RequestBody RoleEntity role) {
         loginService.saveRoleEntity(role);
         return ReturnMessage.success("保存成功");
@@ -54,6 +56,7 @@ public class RoleCtrl implements ICommonControl {
     @ApiOperation("修改角色")
     @RequestMapping(path = "/role", method = RequestMethod.PUT)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> updateRole(@RequestBody RoleEntity role) {
         loginService.updateRoleEntity(role);
         return ReturnMessage.success("修改成功");
@@ -62,6 +65,7 @@ public class RoleCtrl implements ICommonControl {
     @ApiOperation("删除角色")
     @RequestMapping(path = "/role", method = RequestMethod.DELETE)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> deleteRole(@RequestParam(name = "name") String name) {
         loginService.deleteRoleEntity(name);
         return ReturnMessage.success("删除成功");
@@ -70,6 +74,7 @@ public class RoleCtrl implements ICommonControl {
     @ApiOperation("保存角色关联菜单")
     @RequestMapping(path = "/role/menus", method = RequestMethod.POST)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> saveRoleMenus(@RequestBody RoleMenuEntity rme) {
         loginService.updateRoleMenus(rme);
         return ReturnMessage.success("保存成功");

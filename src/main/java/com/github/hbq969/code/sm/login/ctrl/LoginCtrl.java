@@ -1,6 +1,7 @@
 package com.github.hbq969.code.sm.login.ctrl;
 
 import com.github.hbq969.code.common.encrypt.ext.config.Decrypt;
+import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
 import com.github.hbq969.code.sm.login.model.LoginInfo;
@@ -30,6 +31,7 @@ public class LoginCtrl implements ICommonControl {
     @RequestMapping(path = "/login", method = RequestMethod.POST)
     @ResponseBody
     @Decrypt
+    @Log(collectPostBody = false, collectResult = true)
     public ReturnMessage<?> login(HttpServletRequest request, HttpServletResponse response, @RequestBody LoginInfo info) {
         loginService.login(info, request, response);
         return ReturnMessage.success("登录成功");
@@ -38,6 +40,7 @@ public class LoginCtrl implements ICommonControl {
     @ApiOperation("注销")
     @RequestMapping(path = "/logout", method = RequestMethod.POST)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> logout(HttpServletRequest request, HttpServletResponse response) {
         loginService.logout(request, response);
         return ReturnMessage.success("注销成功");

@@ -102,7 +102,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
     private void initialScript() {
         try {
             List<String> lines = IOUtils.readLines(LoginServiceImpl.class.getResourceAsStream("/sm-initial.sql"), StandardCharsets.UTF_8);
-            log.debug("Read sm-initial.sql, Lines: {}", CollectionUtils.size(lines));
+            log.debug("读取 sm-initial.sql。");
             List<String> box = new ArrayList<>();
             for (String line : lines) {
                 if (StrUtils.strEmpty(line) || StrUtils.strEmpty(line.trim())) {
@@ -117,7 +117,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
                     } catch (DataAccessException e) {
                     }
                     if (log.isDebugEnabled()) {
-                        log.debug("execute: {}", sql);
+                        log.debug(sql);
                     }
                     box.clear();
                 }

@@ -1,6 +1,7 @@
 package com.github.hbq969.code.sm.login.ctrl;
 
 import com.github.hbq969.code.common.encrypt.ext.config.Decrypt;
+import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
 import com.github.hbq969.code.sm.login.dao.entity.UserEntity;
@@ -34,6 +35,7 @@ public class UserCtrl implements ICommonControl {
     @ApiOperation("新增用户")
     @RequestMapping(path = "/user", method = RequestMethod.POST)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> saveUser(@RequestBody UserEntity user) {
         loginService.saveUserEntity(user);
         return ReturnMessage.success("保存成功");
@@ -42,6 +44,7 @@ public class UserCtrl implements ICommonControl {
     @ApiOperation("修改用户")
     @RequestMapping(path = "/user", method = RequestMethod.PUT)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> updateUser(@RequestBody UserEntity user) {
         loginService.updateUserEntity(user);
         return ReturnMessage.success("修改成功");
@@ -50,6 +53,7 @@ public class UserCtrl implements ICommonControl {
     @ApiOperation("删除用户")
     @RequestMapping(path = "/user", method = RequestMethod.DELETE)
     @ResponseBody
+    @Log(collectResult = true)
     public ReturnMessage<?> deleteUser(@RequestParam(name = "username") String username) {
         loginService.deleteUserEntity(username);
         return ReturnMessage.success("删除成功");
@@ -59,6 +63,7 @@ public class UserCtrl implements ICommonControl {
     @RequestMapping(path = "/user/pass", method = RequestMethod.PUT)
     @ResponseBody
     @Decrypt
+    @Log(collectPostBody = false, collectResult = true)
     public ReturnMessage<?> updatePass(@RequestBody PasswordModify modify) {
         loginService.updatePassword(modify);
         return ReturnMessage.success("修改成功");
@@ -68,6 +73,7 @@ public class UserCtrl implements ICommonControl {
     @RequestMapping(path = "/user/reset", method = RequestMethod.POST)
     @ResponseBody
     @Decrypt
+    @Log(collectPostBody = false, collectResult = true)
     public ReturnMessage<?> resetPassword(@RequestBody ResetPassword rp) {
         loginService.resetPassword(rp);
         return ReturnMessage.success("重置成功");
