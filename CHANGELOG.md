@@ -27,3 +27,7 @@
 ## 2025-01-17
 ### Features
 - 所有修改类接口增加操作日志记录，需开启operlog.enabled，日志记录在表log_hbq969
+
+## 2025-01-20
+### Modify
+- 调整h_menus表url长度为1024
