@@ -34,7 +34,7 @@
             `app`         varchar(255) NOT NULL comment '应用',
             `name`        VARCHAR(255) NOT NULL comment '菜单名称',
             `menu_desc`   VARCHAR(255) comment '菜单描述',
-            `url`         VARCHAR(255) comment '菜单链接',
+            `url`         VARCHAR(1024) comment '菜单链接',
             `parent_key`  varchar(255) DEFAULT '0' comment '父菜单标识',
             `menu_level`  NUMERIC(2)   default 1 comment '菜单层级',
             `order_index` NUMERIC(10)  DEFAULT 0 comment '菜单顺序',
