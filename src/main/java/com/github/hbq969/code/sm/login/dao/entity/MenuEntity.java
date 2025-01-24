@@ -56,32 +56,12 @@ public class MenuEntity implements DictModel, DictAware {
 
     public void initial(SpringContext context) {
         this.createdAt = FormatTime.nowSecs();
-        if (StringUtils.isEmpty(this.url)) {
-            return;
-        }
-        if (StringUtils.startsWith(this.url, "inner:")) {
-            String str = this.url.substring(6);
-            String contextPath = context.getProperty("server.servlet.context-path");
-            if (StringUtils.isNotEmpty(contextPath) && !StringUtils.startsWith(str, contextPath)) {
-                this.url = "inner:" + contextPath + str;
-            }
-        }
+        buildUrl(context);
     }
 
     public void update(SpringContext context) {
         this.updatedAt = FormatTime.nowSecs();
-        if (StringUtils.isEmpty(this.url)) {
-            return;
-        }
-        if (StringUtils.startsWith(this.url, "inner:")) {
-            String str = this.url.substring(6);
-            String contextPath = context.getProperty("server.servlet.context-path");
-            if (StringUtils.isNotEmpty(contextPath)
-                    && !StringUtils.startsWith(str, contextPath)
-                    && !StringUtils.contains(str, contextPath)) {
-                this.url = "inner:" + contextPath + str;
-            }
-        }
+        buildUrl(context);
     }
 
     public void addMenuEntity(MenuEntity menuEntity) {
@@ -95,6 +75,21 @@ public class MenuEntity implements DictModel, DictAware {
         UserInfo ui = UserContext.get();
         if (null == ui || (!StringUtils.equals("ADMIN", ui.getRoleName()) && SYSTEM_MENUS.contains(name))) {
             throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+        }
+    }
+
+    private void buildUrl(SpringContext context) {
+        if (StringUtils.isEmpty(this.url)) {
+            throw new IllegalArgumentException("url不能为空，请检查");
+        }
+        if (StringUtils.startsWith(this.url, "inner:")) {
+            String str = this.url.substring(6);
+            String contextPath = context.getProperty("server.servlet.context-path");
+            if (StringUtils.isNotEmpty(contextPath)
+                    && !StringUtils.startsWith(str, contextPath)
+                    && !StringUtils.contains(str, contextPath)) {
+                this.url = "inner:" + contextPath + str;
+            }
         }
     }
 }
