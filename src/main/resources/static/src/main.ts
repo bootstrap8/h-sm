@@ -37,6 +37,66 @@ import NginxIcon from "@/components/icon/NginxIcon.vue";
 import HAProxyIcon from "@/components/icon/HAProxyIcon.vue";
 import ElasticsearchIcon from "@/components/icon/ElasticsearchIcon.vue";
 import HomeIcon from "@/components/icon/HomeIcon.vue";
+import API2Icon from "@/components/icon/API2Icon.vue";
+import API3Icon from "@/components/icon/API3Icon.vue";
+import Data1 from "@/components/icon/Data1.vue";
+import Document1 from "@/components/icon/Document1.vue";
+import Document2 from "@/components/icon/Document2.vue";
+import Download from "@/components/icon/Download.vue";
+import Job1 from "@/components/icon/Job1.vue";
+import Job2 from "@/components/icon/Job2.vue";
+import Job3 from "@/components/icon/Job3.vue";
+import Network1 from "@/components/icon/Network1.vue";
+import Report2Icon from "@/components/icon/Report2Icon.vue";
+import Report3Icon from "@/components/icon/Report3Icon.vue";
+import Save from "@/components/icon/Save.vue";
+import Server1 from "@/components/icon/Server1.vue";
+import Settings2Icon from "@/components/icon/Settings2Icon.vue";
+import Settings3Icon from "@/components/icon/Settings3Icon.vue";
+import Upload from "@/components/icon/Upload.vue";
+import AI1 from "@/components/icon/AI1.vue";
+import AI2 from "@/components/icon/AI2.vue";
+import alarm from "@/components/icon/alarm.vue";
+import centos from "@/components/icon/centos.vue";
+import chatgpt from "@/components/icon/chatgpt.vue";
+import conffile from "@/components/icon/conffile.vue";
+import Console from "@/components/icon/Console.vue";
+import consul from "@/components/icon/consul.vue";
+import debian from "@/components/icon/debian.vue";
+import devops from "@/components/icon/devops.vue";
+import docker from "@/components/icon/docker.vue";
+import ecloud from "@/components/icon/ecloud.vue";
+import ecs from "@/components/icon/ecs.vue";
+import exception from "@/components/icon/exception.vue";
+import github from "@/components/icon/github.vue";
+import gitlab from "@/components/icon/gitlab.vue";
+import gray from "@/components/icon/gray.vue";
+import guide from "@/components/icon/guide.vue";
+import handbook from "@/components/icon/handbook.vue";
+import harbor from "@/components/icon/harbor.vue";
+import istio from "@/components/icon/istio.vue";
+import java from "@/components/icon/java.vue";
+import jenkins from "@/components/icon/jenkins.vue";
+import jira from "@/components/icon/jira.vue";
+import linux from "@/components/icon/linux.vue";
+import macos from "@/components/icon/macos.vue";
+import monitor from "@/components/icon/monitor.vue";
+import MQ from "@/components/icon/MQ.vue";
+import nacos from "@/components/icon/nacos.vue";
+import order from "@/components/icon/order.vue";
+import pool from "@/components/icon/pool.vue";
+import product from "@/components/icon/product.vue";
+import python from "@/components/icon/python.vue";
+import redhat from "@/components/icon/redhat.vue";
+import slb from "@/components/icon/slb.vue";
+import solaris from "@/components/icon/solaris.vue";
+import tomcat from "@/components/icon/tomcat.vue";
+import ubuntu from "@/components/icon/ubuntu.vue";
+import version from "@/components/icon/version.vue";
+import windows from "@/components/icon/windows.vue";
+import zhongtai from "@/components/icon/zhongtai.vue";
+import zookeeper from "@/components/icon/zookeeper.vue";
+import update from "@/components/icon/update.vue";
 
 const zhCn = require('element-plus/dist/locale/zh-cn.min.js')
 
@@ -73,6 +133,66 @@ app.component('NginxIcon', NginxIcon);
 app.component('HAProxyIcon', HAProxyIcon);
 app.component('ElasticsearchIcon', ElasticsearchIcon);
 app.component('HomeIcon', HomeIcon)
+app.component('API2Icon', API2Icon)
+app.component('API3Icon', API3Icon)
+app.component('Data1', Data1)
+app.component('Document1', Document1)
+app.component('Document2', Document2)
+app.component('Download', Download)
+app.component('Job1', Job1)
+app.component('Job2', Job2)
+app.component('Job3', Job3)
+app.component('Network1', Network1)
+app.component('Report2Icon', Report2Icon)
+app.component('Report3Icon', Report3Icon)
+app.component('Save', Save)
+app.component('Server1', Server1)
+app.component('Settings2Icon', Settings2Icon)
+app.component('Settings3Icon', Settings3Icon)
+app.component('Upload', Upload)
+app.component('AI1', AI1)
+app.component('AI2', AI2)
+app.component('alarm', alarm)
+app.component('centos', centos)
+app.component('chatgpt', chatgpt)
+app.component('conffile', conffile)
+app.component('Console', Console)
+app.component('consul', consul)
+app.component('debian', debian)
+app.component('devops', devops)
+app.component('docker', docker)
+app.component('ecloud', ecloud)
+app.component('ecs', ecs)
+app.component('exception', exception)
+app.component('github', github)
+app.component('gitlab', gitlab)
+app.component('gray', gray)
+app.component('guide', guide)
+app.component('handbook', handbook)
+app.component('harbor', harbor)
+app.component('istio', istio)
+app.component('java', java)
+app.component('jenkins', jenkins)
+app.component('jira', jira)
+app.component('linux', linux)
+app.component('macos', macos)
+app.component('monitor', monitor)
+app.component('MQ', MQ)
+app.component('nacos', nacos)
+app.component('order', order)
+app.component('pool', pool)
+app.component('product', product)
+app.component('python', python)
+app.component('redhat', redhat)
+app.component('slb', slb)
+app.component('solaris', solaris)
+app.component('tomcat', tomcat)
+app.component('ubuntu', ubuntu)
+app.component('version', version)
+app.component('windows', windows)
+app.component('zhongtai', zhongtai)
+app.component('zookeeper', zookeeper)
+app.component('update', update)
 
 app.use(ElementPlus, {locale: zhCn})
 app.use(store)

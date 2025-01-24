@@ -31,3 +31,9 @@
 ## 2025-01-20
 ### Modify
 - 调整h_menus表url长度为1024
+
+## 2025-01-23
+### Modify
+- 补充60多个新图标
+### Bugs
+- 修复新增菜单时url勿凭借`server.servlet.context-path`的问题
