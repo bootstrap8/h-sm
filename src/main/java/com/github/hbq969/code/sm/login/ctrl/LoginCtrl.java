@@ -4,9 +4,11 @@ import com.github.hbq969.code.common.encrypt.ext.config.Decrypt;
 import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
+import com.github.hbq969.code.sm.login.dao.entity.MenuEntity;
 import com.github.hbq969.code.sm.login.model.LoginInfo;
 import com.github.hbq969.code.sm.login.model.PermitInfo;
 import com.github.hbq969.code.sm.login.service.LoginService;
+import com.github.hbq969.code.sm.login.session.UserContext;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping(path = "/hbq969-sm/system")
 @Slf4j
@@ -52,7 +57,12 @@ public class LoginCtrl implements ICommonControl {
     public ReturnMessage<PermitInfo> getUserInfo(HttpServletRequest request) {
         PermitInfo info = new PermitInfo();
         info.setUser(loginService.getUserInfo(request));
-        info.setAllMenus(loginService.queryAllMenuList());
+        if (UserContext.get().isAdmin()) {
+            List<MenuEntity> all = loginService.queryAllMenuList();
+            info.setAllMenus(all);
+        } else {
+            info.setAllMenus(Collections.EMPTY_LIST);
+        }
         return ReturnMessage.success(info);
     }
 }

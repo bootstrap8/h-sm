@@ -37,3 +37,7 @@
 - 补充60多个新图标
 ### Bugs
 - 修复新增菜单时url勿凭借`server.servlet.context-path`的问题
+
+## 2025-02-07
+### Modify
+- 会话获取接口屏蔽掉权限完的数据
