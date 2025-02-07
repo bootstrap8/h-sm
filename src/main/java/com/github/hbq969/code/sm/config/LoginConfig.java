@@ -33,4 +33,9 @@ public class LoginConfig {
      * 数据库dialect，默认mysql，可支持oracle
      */
     private String dialect = "mysql";
+
+    /**
+     * 会话id名称，需要和<code>server.servlet.session.cookie.name</code>保持一致
+     */
+    private String sessionKey="JSESSIONID";
 }

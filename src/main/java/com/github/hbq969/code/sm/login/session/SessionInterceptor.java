@@ -1,21 +1,15 @@
 package com.github.hbq969.code.sm.login.session;
 
-import com.github.hbq969.code.common.restful.Result;
 import com.github.hbq969.code.common.spring.interceptor.AbstractHandlerInterceptor;
-import com.github.hbq969.code.common.utils.GsonUtils;
 import com.github.hbq969.code.sm.config.LoginConfig;
 import com.github.hbq969.code.sm.login.model.UserInfo;
 import com.github.hbq969.code.sm.login.service.LoginService;
 import com.github.hbq969.code.sm.login.utils.CookieUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -47,7 +41,7 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         boolean result = false;
-        String jsid = CookieUtils.getCookieValue(request, "JSESSIONID");
+        String jsid = CookieUtils.getCookieValue(request, conf.getSessionKey());
         String sid = null;
         if (StringUtils.contains(jsid, ".")) {
             sid = jsid.substring(0, jsid.indexOf("."));
@@ -61,7 +55,7 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
                 UserInfo ui = (UserInfo) hs.getAttribute("h-sm-user");
                 UserContext.set(ui);
                 if (currentTimeMillis == 0 || System.currentTimeMillis() - currentTimeMillis > 5000) {
-                    Cookie jsessionCookie = new Cookie("JSESSIONID", jsid);
+                    Cookie jsessionCookie = new Cookie(conf.getSessionKey(), jsid);
                     jsessionCookie.setMaxAge((int) conf.getCookieMaxAgeSec());
                     jsessionCookie.setPath("/");
                     jsessionCookie.setHttpOnly(true);
@@ -72,7 +66,7 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
         }
         if (!result) {
             log.warn("会话失效，或已注销");
-            invalidateSession(response);
+            invalidateSession(conf,response);
         }
         return result;
     }
@@ -82,8 +76,8 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
         UserContext.remove();
     }
 
-    private static void invalidateSession(HttpServletResponse response) throws IOException {
-        Cookie jsessionCookie = new Cookie("JSESSIONID", null);
+    private static void invalidateSession(LoginConfig conf,HttpServletResponse response) throws IOException {
+        Cookie jsessionCookie = new Cookie(conf.getSessionKey(), null);
         jsessionCookie.setMaxAge(5);
         jsessionCookie.setPath("/");
         jsessionCookie.setHttpOnly(true);

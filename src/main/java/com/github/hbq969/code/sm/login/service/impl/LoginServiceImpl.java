@@ -407,7 +407,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         if (session != null) {
             log.info("注销账号: {}, 会话: {}", session.getAttribute("h-sm-user"), session.getId());
             sessions.invalidate(session.getId());
-            Cookie jsessionCookie = new Cookie("JSESSIONID", null);
+            Cookie jsessionCookie = new Cookie(conf.getSessionKey(), null);
             jsessionCookie.setMaxAge(5);
             jsessionCookie.setPath("/");
             jsessionCookie.setHttpOnly(true);

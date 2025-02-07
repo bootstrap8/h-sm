@@ -301,8 +301,12 @@ onMounted(() => {
       if(data.menus && data.menus.length>0){
         data.menus.forEach(m=>{
           data.menuEntry[m.name]=m.menuDesc
+          menuMap[m.url]=m.menuDesc
           if(m.menus && m.menus.length>0){
-            m.menus.forEach(sm=>data.menuEntry[sm.name]=sm.menuDesc)
+            m.menus.forEach(sm=>{
+              data.menuEntry[sm.name]=sm.menuDesc
+              menuMap[sm.url]=sm.menuDesc
+            })
           }
         })
       }
