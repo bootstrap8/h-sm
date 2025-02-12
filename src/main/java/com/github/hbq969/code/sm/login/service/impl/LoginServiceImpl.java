@@ -40,6 +40,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -101,8 +102,8 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     private void initialScript() {
         try {
-            List<String> lines = IOUtils.readLines(LoginServiceImpl.class.getResourceAsStream("/sm-initial.sql"), StandardCharsets.UTF_8);
-            log.debug("读取 sm-initial.sql。");
+            log.debug("读取 {}, 编码格式: {}", conf.getInitScriptFile(), conf.getInitScriptFileCharset());
+            List<String> lines = IOUtils.readLines(LoginServiceImpl.class.getResourceAsStream("/" + conf.getInitScriptFile()), Charset.forName(conf.getInitScriptFileCharset()));
             List<String> box = new ArrayList<>();
             for (String line : lines) {
                 if (StrUtils.strEmpty(line) || StrUtils.strEmpty(line.trim())) {
@@ -112,12 +113,15 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
                 box.add(line);
                 if (line.endsWith(";")) {
                     String sql = String.join("\n", box).replaceAll("h-sm", context.getProperty("spring.application.name"));
-                    try {
-                        context.getBean(JdbcTemplate.class).update(sql);
-                    } catch (DataAccessException e) {
+                    if (sql.endsWith(";")) {
+                        sql = sql.substring(0, sql.length() - 1);
                     }
                     if (log.isDebugEnabled()) {
                         log.debug(sql);
+                    }
+                    try {
+                        context.getBean(JdbcTemplate.class).update(sql);
+                    } catch (DataAccessException e) {
                     }
                     box.clear();
                 }

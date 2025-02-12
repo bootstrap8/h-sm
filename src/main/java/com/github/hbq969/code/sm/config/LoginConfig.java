@@ -37,5 +37,15 @@ public class LoginConfig {
     /**
      * 会话id名称，需要和<code>server.servlet.session.cookie.name</code>保持一致
      */
-    private String sessionKey="JSESSIONID";
+    private String sessionKey = "JSESSIONID";
+
+    /**
+     * 初始化脚本文件，如果是oracle gbk格式的请选择 sm-initial-gbk.sql
+     */
+    private String initScriptFile = "sm-initial.sql";
+
+    /**
+     * 初始化脚本文件编码格式
+     */
+    private String initScriptFileCharset = "UTF-8";
 }

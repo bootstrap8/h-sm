@@ -7,10 +7,10 @@
             `app`        varchar(255) NOT NULL comment '应用',
             `username`   VARCHAR(255) NOT NULL comment '账号名',
             `password`   VARCHAR(255) NOT NULL comment '密码',
-            `role_name`  VARCHAR(255) NOT NULl comment '角色名称',
+            `role_name`  VARCHAR(255) NOT NULL comment '角色名称',
             `created_at` NUMERIC(20) comment '创建时间',
             `updated_at` NUMERIC(20) comment '更新时间',
-            primary key (`app`, `username`)
+            CONSTRAINT pk_h_users primary key (`app`, `username`)
         ) ENGINE = InnoDB
           DEFAULT CHARSET = utf8
     </update>
@@ -23,7 +23,7 @@
             `description` VARCHAR(500) comment '角色描述',
             `created_at`  NUMERIC(20) comment '创建时间',
             `updated_at`  NUMERIC(20) comment '更新时间',
-            primary key  (`app`, `name`)
+            CONSTRAINT pk_h_roles primary key  (`app`, `name`)
         ) ENGINE = InnoDB
           DEFAULT CHARSET = utf8
     </update>
@@ -41,7 +41,7 @@
             `icon_name`   varchar(255) DEFAULT 'LogIcon' comment '菜单图标',
             `created_at`  NUMERIC(20) comment '创建时间',
             `updated_at`  NUMERIC(20) comment '修改时间',
-            primary key (`app`, `name`)
+            CONSTRAINT pk_h_menus primary key (`app`, `name`)
         ) ENGINE = InnoDB
           DEFAULT CHARSET = utf8
     </update>
@@ -52,7 +52,7 @@
             `app`       varchar(255) NOT NULL comment '应用',
             `role_name` varchar(255) NOT NULL comment '角色ID',
             `menu_name` varchar(255) NOT NULL comment '菜单ID',
-            primary key (`app`, `role_name`, `menu_name`)
+            CONSTRAINT pk_h_role_menus primary key (`app`, `role_name`, `menu_name`)
         ) ENGINE = InnoDB
           DEFAULT CHARSET = utf8
     </update>

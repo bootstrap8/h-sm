@@ -5,12 +5,12 @@
         CREATE TABLE h_users
         (
             app varchar2 (255) NOT NULL,
-            username VARCHAR2 (255) NOT NULL UNIQUE,
+            username VARCHAR2 (255) NOT NULL,
             password VARCHAR2 (255) NOT NULL,
             role_name VARCHAR2 (255) NOT NULL,
             created_at NUMBER (20),
             updated_at NUMBER (20),
-            primary key (app, username)
+            CONSTRAINT pk_h_users PRIMARY KEY (app, username)
         )
     </update>
 
@@ -22,7 +22,7 @@
             description VARCHAR2 (500),
             created_at NUMBER (20),
             updated_at NUMBER (20),
-            primary key (app, name)
+            CONSTRAINT pk_h_roles PRIMARY KEY (app, name)
         )
     </update>
 
@@ -39,7 +39,7 @@
             icon_name varchar2 (255) DEFAULT 'LogIcon',
             created_at NUMBER (20),
             updated_at NUMBER (20),
-            primary key (app, name)
+            CONSTRAINT pk_h_menus PRIMARY KEY (app, name)
         )
     </update>
 
@@ -49,7 +49,7 @@
             app varchar2 (255) NOT NULL,
             role_name varchar2 (255) NOT NULL,
             menu_name varchar2 (255) NOT NULL,
-            primary key (app, role_name, menu_name)
+            CONSTRAINT pk_h_role_menus PRIMARY KEY (app, role_name, menu_name)
         )
     </update>
 </mapper>
