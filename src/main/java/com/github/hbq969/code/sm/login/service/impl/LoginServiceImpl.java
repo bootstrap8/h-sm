@@ -41,10 +41,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -70,9 +70,15 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+    private CountDownLatch cdl = new CountDownLatch(1);
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        initialData();
+        try {
+            initialData();
+        } finally {
+            cdl.countDown();
+        }
         log.info("配置的cookie、会话超时时间: {} 秒。", conf.getCookieMaxAgeSec());
         this.sessions = CacheBuilder.newBuilder().maximumSize(500).initialCapacity(100).concurrencyLevel(10).expireAfterAccess(conf.getCookieMaxAgeSec(), TimeUnit.SECONDS).removalListener((RemovalListener<String, HttpSession>) notif -> {
             log.info("session自动过期，sid: {}", notif.getKey());
@@ -130,6 +136,15 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         } catch (Exception e) {
             dict.reloadImmediately();
         }
+    }
+
+    @Override
+    public void finished(Runnable r) {
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+        }
+        r.run();
     }
 
     @Override

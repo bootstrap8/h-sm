@@ -1,5 +1,6 @@
 package com.github.hbq969.code.sm.login.service;
 
+import com.github.hbq969.code.common.lang.Init;
 import com.github.hbq969.code.sm.login.dao.entity.*;
 import com.github.hbq969.code.sm.login.model.ResetPassword;
 import com.github.hbq969.code.sm.login.model.UserInfo;
@@ -13,8 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
-public interface LoginService {
+public interface LoginService extends Init {
+
     PageInfo<RoleEntity> queryRoleList(int pageNum, int pageSize, RoleEntity q);
 
     void saveRoleEntity(RoleEntity entity);
