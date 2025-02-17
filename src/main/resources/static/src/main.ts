@@ -97,6 +97,10 @@ import windows from "@/components/icon/windows.vue";
 import zhongtai from "@/components/icon/zhongtai.vue";
 import zookeeper from "@/components/icon/zookeeper.vue";
 import update from "@/components/icon/update.vue";
+import encrypt1 from "@/components/icon/encrypt1.vue";
+import encrypt2 from "@/components/icon/encrypt2.vue";
+import encrypt3 from "@/components/icon/encrypt3.vue";
+import encrypt4 from "@/components/icon/encrypt4.vue";
 
 const zhCn = require('element-plus/dist/locale/zh-cn.min.js')
 
@@ -193,6 +197,10 @@ app.component('windows', windows)
 app.component('zhongtai', zhongtai)
 app.component('zookeeper', zookeeper)
 app.component('update', update)
+app.component('encrypt1',encrypt1)
+app.component('encrypt2',encrypt2)
+app.component('encrypt3',encrypt3)
+app.component('encrypt4',encrypt4)
 
 app.use(ElementPlus, {locale: zhCn})
 app.use(store)

@@ -107,3 +107,7 @@ insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','wind
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','zhongtai','中台');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','zookeeper','Zookeeper');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','update','升级');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','encrypt1','加密1');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','encrypt2','加密2');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','encrypt3','加密3');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','encrypt4','网络加密');
