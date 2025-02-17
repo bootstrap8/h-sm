@@ -42,7 +42,7 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         boolean result = false;
         String jsid = CookieUtils.getCookieValue(request, conf.getSessionKey());
-        String sid = null;
+        String sid = jsid;
         if (StringUtils.contains(jsid, ".")) {
             sid = jsid.substring(0, jsid.indexOf("."));
         }
@@ -66,7 +66,7 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
         }
         if (!result) {
             log.warn("会话失效，或已注销");
-            invalidateSession(conf,response);
+            invalidateSession(conf, response);
         }
         return result;
     }
@@ -76,7 +76,7 @@ public class SessionInterceptor extends AbstractHandlerInterceptor {
         UserContext.remove();
     }
 
-    private static void invalidateSession(LoginConfig conf,HttpServletResponse response) throws IOException {
+    private static void invalidateSession(LoginConfig conf, HttpServletResponse response) throws IOException {
         Cookie jsessionCookie = new Cookie(conf.getSessionKey(), null);
         jsessionCookie.setMaxAge(5);
         jsessionCookie.setPath("/");
