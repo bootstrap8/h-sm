@@ -111,3 +111,11 @@ insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','encr
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','encrypt2','加密2');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','encrypt3','加密3');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','encrypt4','网络加密');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','backup1','备份1');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','backup2','备份2');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','profile1','环境1');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','recovery1','恢复1');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','recovery2','恢复2');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service1','服务1');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service2','服务2');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','timer1','定时1');
