@@ -119,3 +119,6 @@ insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','reco
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service1','服务1');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service2','服务2');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','timer1','定时1');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','backup3','备份3');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','backup4','备份4');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','recovery3','恢复3');
