@@ -121,6 +121,7 @@
                   @tab-remove="removeTab"
                   class="custom-tabs"
                   :class="{ 'has-tabs': tabs.length > 0 }"
+                  @tab-click="tabClick"
               >
                 <el-tab-pane
                     v-for="tab in tabs"
@@ -271,7 +272,7 @@ const data = reactive({
   menus: [],
   menuEntry: {}
 })
-provide('session',data)
+provide('session', data)
 const menuMap = reactive({})
 const logout = () => {
   axios({
@@ -298,14 +299,14 @@ onMounted(() => {
       data.user.userName = user.userName
       data.user.roleName = user.roleName
       data.menus = user.menus
-      if(data.menus && data.menus.length>0){
-        data.menus.forEach(m=>{
-          data.menuEntry[m.name]=m.menuDesc
-          menuMap[m.url]=m.menuDesc
-          if(m.menus && m.menus.length>0){
-            m.menus.forEach(sm=>{
-              data.menuEntry[sm.name]=sm.menuDesc
-              menuMap[sm.url]=sm.menuDesc
+      if (data.menus && data.menus.length > 0) {
+        data.menus.forEach(m => {
+          data.menuEntry[m.name] = m.menuDesc
+          menuMap[m.url] = m.menuDesc
+          if (m.menus && m.menus.length > 0) {
+            m.menus.forEach(sm => {
+              data.menuEntry[sm.name] = sm.menuDesc
+              menuMap[sm.url] = sm.menuDesc
             })
           }
         })
@@ -358,6 +359,25 @@ const checkUrlStatus = async (url: string) => {
   }
 };
 
+const addTimestamp = (iframeUrl) => {
+  let timestamp = new Date().getTime();
+  if (iframeUrl.includes('#')) {
+    let array = iframeUrl.split('#')
+    if (array[0].includes('?')) {
+      iframeUrl = array[0] + '&h_sm_t=' + timestamp + '#' + array[1]
+    } else {
+      iframeUrl = array[0] + '?h_sm_t=' + timestamp + '#' + array[1]
+    }
+  } else {
+    if (iframeUrl.includes('?')) {
+      iframeUrl = iframeUrl + '&h_sm_t=' + timestamp
+    } else {
+      iframeUrl = iframeUrl + '?h_sm_t=' + timestamp
+    }
+  }
+  return iframeUrl
+}
+
 // 处理菜单项选择
 const handleMenuSelect = async (index: string) => {
   let component;
@@ -375,8 +395,9 @@ const handleMenuSelect = async (index: string) => {
     if (!tab) {
       if (index.startsWith('inner:')) {
         // 处理内部 iframe
-        const iframeUrl = index.substring(6);
-        console.log('iframeUrl: ', iframeUrl);
+        let iframeUrl = index.substring(6);
+        iframeUrl = addTimestamp(iframeUrl)
+        console.log('加载菜单链接: ', iframeUrl)
         component = defineComponent({
           setup() {
             const iframe = ref<HTMLIFrameElement | null>(null);
@@ -392,6 +413,9 @@ const handleMenuSelect = async (index: string) => {
                 // 监听内容变化
                 const observer = new MutationObserver(() => {
                   const newHeight = iframe.value.contentWindow.document.body.scrollHeight;
+                  if(newHeight<=0){
+                    return
+                  }
                   iframe.value.style.height = `${newHeight}px`;
                   console.log('iframe 高度动态调整:', newHeight);
                 });
@@ -452,6 +476,7 @@ const handleMenuSelect = async (index: string) => {
 // 移除 Tab 页
 const removeTab = (tabName: string) => {
   const index = tabs.value.findIndex((tab) => tab.name === tabName);
+  // console.log("关闭tab: ",tabName)
   tabs.value.splice(index, 1);
   if (tabName === activeTab.value) {
     activeTab.value = tabs.value[0]?.name || '';
@@ -461,6 +486,9 @@ const removeTab = (tabName: string) => {
 const refreshPage = () => {
   window.location.reload();
 };
+
+const tabClick = (pane, ev) => {
+}
 
 // 防抖函数
 const debounce = (callback: (...args: any[]) => void, delay: number) => {

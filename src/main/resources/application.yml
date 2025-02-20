@@ -45,6 +45,7 @@ spring:
         cookie-max-age-sec: 1800
         dialect: embedded
         include-urls:
+          - "/hbq969-common/**"
           - "/hbq969-sm/**"
           - "/hbq969-dict/**"
           - "/hbq969-tabula/**"
@@ -63,6 +64,8 @@ spring:
           - "/hbq969-sm/**/login"
       resource-handler-registry:
         entries:
+          - handlers: /hbq969-common/**
+            locations: classpath:/static/hbq969-common/
           - handlers: /hbq969-dict/**
             locations: classpath:/static/hbq969-dict/
           - handlers: /hbq969-tabula/**

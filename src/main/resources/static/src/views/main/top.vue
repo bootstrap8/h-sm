@@ -268,6 +268,9 @@ const handleMenuSelect = async (index: string) => {
                 // 监听内容变化
                 const observer = new MutationObserver(() => {
                   const newHeight = iframe.value.contentWindow.document.body.scrollHeight;
+                  if(newHeight<=0){
+                    return
+                  }
                   iframe.value.style.height = `${newHeight}px`;
                   console.log('iframe 高度动态调整:', newHeight);
                 });
