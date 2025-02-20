@@ -406,15 +406,21 @@ const handleMenuSelect = async (index: string) => {
             const onIframeLoad = () => {
               if (iframe.value && iframe.value.contentWindow?.document.body) {
                 // 动态设置 iframe 的高度
-                const contentHeight = iframe.value.contentWindow.document.body.scrollHeight;
+                let contentHeight = iframe.value.contentWindow.document.body.scrollHeight;
+                if (contentHeight < 400) {
+                  contentHeight = window.innerHeight - 156;
+                }
                 iframe.value.style.height = `${contentHeight}px`;
                 console.log('iframe 高度已调整:', contentHeight);
 
                 // 监听内容变化
                 const observer = new MutationObserver(() => {
-                  const newHeight = iframe.value.contentWindow.document.body.scrollHeight;
-                  if(newHeight<=0){
+                  let newHeight = iframe.value.contentWindow.document.body.scrollHeight;
+                  if (newHeight <= 0) {
                     return
+                  }
+                  if (newHeight < 400) {
+                    newHeight = window.innerHeight - 156;
                   }
                   iframe.value.style.height = `${newHeight}px`;
                   console.log('iframe 高度动态调整:', newHeight);
