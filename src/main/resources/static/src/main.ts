@@ -112,6 +112,13 @@ import timer1 from "@/components/icon/timer1.vue";
 import backup3 from "@/components/icon/backup3.vue";
 import backup4 from "@/components/icon/backup4.vue";
 import recovery3 from "@/components/icon/recovery3.vue";
+import profile2 from "@/components/icon/profile2.vue";
+import recovery4 from "@/components/icon/recovery4.vue";
+import recovery5 from "@/components/icon/recovery5.vue";
+import recovery6 from "@/components/icon/recovery6.vue";
+import service3 from "@/components/icon/service3.vue";
+import service4 from "@/components/icon/service4.vue";
+import service5 from "@/components/icon/service5.vue";
 
 const zhCn = require('element-plus/dist/locale/zh-cn.min.js')
 
@@ -223,6 +230,13 @@ app.component('timer1',timer1)
 app.component('backup3',backup3)
 app.component('backup4',backup4)
 app.component('recovery3',recovery3)
+app.component('profile2',profile2)
+app.component('recovery4',recovery4)
+app.component('recovery5',recovery5)
+app.component('recovery6',recovery6)
+app.component('service3',service3)
+app.component('service4',service4)
+app.component('service5',service5)
 
 app.use(ElementPlus, {locale: zhCn})
 app.use(store)
