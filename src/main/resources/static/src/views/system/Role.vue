@@ -37,9 +37,11 @@ const queryRoleList = () => {
       data.roles = res.data.body.list
       data.total = res.data.body.total
     } else {
-      msg(res.data.errorMessage, 'warning')
+      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+      msg(content, "warning")
     }
   }).catch((err: Error) => {
+    console.log('',err)
     msg('请求异常', 'error')
   })
 }
@@ -71,9 +73,11 @@ const updateRole = async (formEl: FormInstance | undefined) => {
           dialogFormVisible.value = false
           queryRoleList()
         } else {
-          msg(res.data.errorMessage, 'warning')
+          let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+          msg(content, "warning")
         }
       }).catch((err: Error) => {
+        console.log('',err)
         msg('请求异常', 'error')
       })
     }
@@ -106,9 +110,11 @@ const deleteRole = (scope) => {
       msg(res.data.body, 'success')
       queryRoleList()
     } else {
-      msg(res.data.errorMessage, 'warning')
+      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+      msg(content, "warning")
     }
   }).catch((err: Error) => {
+    console.log('',err)
     msg('请求异常', 'error')
   })
 }
@@ -148,9 +154,11 @@ const updateRoleMenus = async (formEl: FormInstance | undefined) => {
           msg(res.data.body, 'success')
           dialogFormVisible2.value = false
         } else {
-          msg(res.data.errorMessage, 'warning')
+          let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+          msg(content, "warning")
         }
       }).catch((err: Error) => {
+        console.log('',err)
         msg('请求异常', 'error')
       })
     }
@@ -171,9 +179,11 @@ const showMenuConfigDialog = (scope) => {
       roleForm2.menus = res.data.body.conf
       console.log('all: %o, conf: %o', data.menus, roleForm2.menus)
     } else {
-      msg(res.data.errorMessage, 'warning')
+      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+      msg(content, "warning")
     }
   }).catch((err: Error) => {
+    console.log('',err)
     msg('请求异常', 'error')
   })
 }
@@ -299,7 +309,6 @@ const _ = (window as any).ResizeObserver;
   overflow-x: auto;
   overflow-y: hidden;
   width: 96%;
-  height: calc(100vh + 60px);
 }
 
 .addBtn {

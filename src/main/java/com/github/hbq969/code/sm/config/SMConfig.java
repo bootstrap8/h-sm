@@ -7,6 +7,9 @@ import com.github.hbq969.code.sm.login.ctrl.UserCtrl;
 import com.github.hbq969.code.sm.login.service.LoginService;
 import com.github.hbq969.code.sm.login.service.impl.LoginServiceImpl;
 import com.github.hbq969.code.sm.login.session.SessionInterceptor;
+import com.github.hbq969.code.sm.perm.advice.PermHandler;
+import com.github.hbq969.code.sm.perm.service.impl.CacheServiceImpl;
+import com.github.hbq969.code.sm.perm.service.impl.PermServiceImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
@@ -52,5 +55,24 @@ public class SMConfig {
     @Bean("h-sm-UserCtrl")
     UserCtrl userCtrl() {
         return new UserCtrl();
+    }
+
+
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
+    @Bean("h-sm-PermServiceImpl")
+    PermServiceImpl permService() {
+        return new PermServiceImpl();
+    }
+
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
+    @Bean("h-sm-CacheServiceImpl")
+    CacheServiceImpl cacheService() {
+        return new CacheServiceImpl();
+    }
+
+    @ConditionalOnProperty(prefix = "spring.mvc.interceptors.login", name = "enabled", havingValue = "true")
+    @Bean("h-sm-PermHandler")
+    PermHandler permHandler() {
+        return new PermHandler();
     }
 }

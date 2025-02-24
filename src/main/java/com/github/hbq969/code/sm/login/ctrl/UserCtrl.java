@@ -8,9 +8,11 @@ import com.github.hbq969.code.sm.login.dao.entity.UserEntity;
 import com.github.hbq969.code.sm.login.model.PasswordModify;
 import com.github.hbq969.code.sm.login.model.ResetPassword;
 import com.github.hbq969.code.sm.login.service.LoginService;
+import com.github.hbq969.code.sm.perm.api.SMRequiresPermissions;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +28,7 @@ public class UserCtrl implements ICommonControl {
     @ApiOperation("分页查询用户信息")
     @RequestMapping(path = "/list", method = RequestMethod.POST)
     @ResponseBody
+    @SMRequiresPermissions(menu = "User", apiKey = "queryUserList", apiDesc = "分页查询用户信息")
     public ReturnMessage<?> queryUserList(@RequestParam(name = "pageNum", defaultValue = "1") int pageNum,
                                           @RequestParam(name = "pageSize", defaultValue = "10") int pageSize,
                                           @RequestBody UserEntity q) {
@@ -36,6 +39,7 @@ public class UserCtrl implements ICommonControl {
     @RequestMapping(path = "/user", method = RequestMethod.POST)
     @ResponseBody
     @Log(collectResult = true)
+    @SMRequiresPermissions(menu = "User", apiKey = "saveUser", apiDesc = "新增用户")
     public ReturnMessage<?> saveUser(@RequestBody UserEntity user) {
         loginService.saveUserEntity(user);
         return ReturnMessage.success("保存成功");
@@ -45,6 +49,7 @@ public class UserCtrl implements ICommonControl {
     @RequestMapping(path = "/user", method = RequestMethod.PUT)
     @ResponseBody
     @Log(collectResult = true)
+    @SMRequiresPermissions(menu = "User", apiKey = "updateUser", apiDesc = "修改用户")
     public ReturnMessage<?> updateUser(@RequestBody UserEntity user) {
         loginService.updateUserEntity(user);
         return ReturnMessage.success("修改成功");
@@ -54,6 +59,7 @@ public class UserCtrl implements ICommonControl {
     @RequestMapping(path = "/user", method = RequestMethod.DELETE)
     @ResponseBody
     @Log(collectResult = true)
+    @SMRequiresPermissions(menu = "User", apiKey = "deleteUser", apiDesc = "删除用户")
     public ReturnMessage<?> deleteUser(@RequestParam(name = "username") String username) {
         loginService.deleteUserEntity(username);
         return ReturnMessage.success("删除成功");
@@ -64,6 +70,7 @@ public class UserCtrl implements ICommonControl {
     @ResponseBody
     @Decrypt
     @Log(collectPostBody = false, collectResult = true)
+    @SMRequiresPermissions(menu = "User", apiKey = "updatePass", apiDesc = "修改密码")
     public ReturnMessage<?> updatePass(@RequestBody PasswordModify modify) {
         loginService.updatePassword(modify);
         return ReturnMessage.success("修改成功");
@@ -74,6 +81,7 @@ public class UserCtrl implements ICommonControl {
     @ResponseBody
     @Decrypt
     @Log(collectPostBody = false, collectResult = true)
+    @SMRequiresPermissions(menu = "User", apiKey = "resetPassword", apiDesc = "重置密码")
     public ReturnMessage<?> resetPassword(@RequestBody ResetPassword rp) {
         loginService.resetPassword(rp);
         return ReturnMessage.success("重置成功");

@@ -1,8 +1,5 @@
 一个包含基本登录、注销、系统管理（角色、用户、菜单）的壳子，应用依赖后添加少量配置即可集成对应功能，适合于构建应用服务的后台管理维护相关功能。
-
 A shell that includes basic login, logout, and system management (roles, users, menus). After the application dependency, a small amount of configuration can be added to integrate the corresponding functions. It is suitable for building background management and maintenance related functions of application services.
-
-
 
 ## 快速开始 (Quick Start)
 ```bash

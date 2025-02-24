@@ -18,6 +18,10 @@ const routes = [
         component: () => import('@/views/main/left.vue')
     },
     {
+        path: '/ai/silicon_flow',
+        component: () => import('@/views/ai/SiliconFlow_NoOverflow.vue')
+    },
+    {
         path: '/404',
         component: () => import('@/views/system/404.vue')
     },

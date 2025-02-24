@@ -5,6 +5,8 @@ insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,ico
 insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','Role','角色管理','/system/Role','system',0,2,'RoleIcon',1735800456);
 insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','User','用户管理','/system/User','system',1,2,'UserIcon',1735800456);
 insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','Menu','菜单管理','/system/Menu','system',2,2,'MenuIcon',1735800456);
+insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','AI','AI 大模型','/ai','-',0,1,'AI2',1735800456);
+insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','SiliconFlow','硅基流动','/ai/SiliconFlow_NoOverflow','AI',0,2,'APIIcon',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','admin','$2a$10$2n7McJFmaxR78hcEU0TELuGGLwpZtqiJDKIolf7SnSETwBye8AYpW','ADMIN',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','manage','$2a$10$oHdG4ticIvzG.8BlBjI9HuC3c9RFSD3u.vr8aphNXC4.SckKfIyLq','MANAGE',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','user','$2a$10$qRoxm0i0yb1E0MVId.NjL.A/Ac3W4puydYhLeufA5zQ8KJmiAKBIO','USER',1735800456);

@@ -49,9 +49,11 @@ const queryMenuList = () => {
       data.level1Menus.unshift({name: '-', menuDesc: '根菜单', url: '/', parentId: '', menuLevel: 0})
       data.iconList = res.data.body.iconList
     } else {
-      msg(res.data.errorMessage, 'warning')
+      let content = '调用 ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
+      msg(content, "warning")
     }
   }).catch((err: Error) => {
+    console.log('', err)
     msg('请求异常', 'error')
   })
 }
@@ -111,9 +113,11 @@ const updateMenu = async (formEl: FormInstance | undefined) => {
           dialogFormVisible.value = false
           queryMenuList()
         } else {
-          msg(res.data.errorMessage, 'warning')
+          let content = '调用 ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
+          msg(content, "warning")
         }
       }).catch((err: Error) => {
+        console.log('', err)
         msg('请求异常', 'error')
       })
     }
@@ -156,15 +160,45 @@ const deleteMenu = (scope) => {
       msg(res.data.body, 'success')
       queryMenuList()
     } else {
-      msg(res.data.errorMessage, 'warning')
+      let content = '调用 ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
+      msg(content, "warning")
     }
   }).catch((err: Error) => {
+    console.log('', err)
     msg('请求异常', 'error')
   })
 }
 
+interface MenuItem {
+  value: string
+}
+
+const supportedMenus = ref<MenuItem[]>([])
+const querySupportedMenus = () => {
+  axios({
+    url: '/menus/supported/menus',
+    method: 'get',
+  }).then((res: any) => {
+    if (res.data.state == 'OK') {
+      res.data.body.forEach(m => supportedMenus.value.push({value: m}))
+    } else {
+      let content = '调用 ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
+      msg(content, "warning")
+    }
+  }).catch((err: Error) => {
+    console.log('', err)
+    msg('请求异常', 'error')
+  })
+}
+const querySearchMenus = (queryString: string, cb: (arg: any) => void) => {
+  const results = queryString
+      ? supportedMenus.value.filter(m => m.value.toLowerCase().includes(queryString.toLowerCase()))
+      : supportedMenus.value
+  cb(results)
+}
+
 onMounted(() => {
-  console.log('页面加载后')
+  querySupportedMenus()
   queryMenuList()
 });
 
@@ -201,64 +235,72 @@ const _ = (window as any).ResizeObserver;
       </el-form-item>
       <el-form-item>
         <el-button type="primary" size="small" @click="queryMenuList()">查询</el-button>
-        <el-button type="success" :icon="Edit" circle @click="showMenuAddDialog()" title="新增菜单" v-if="user.roleName=='ADMIN' || user.roleName=='MANAGE'"/>
+        <el-button type="success" :icon="Edit" circle @click="showMenuAddDialog()" title="新增菜单"
+                   v-if="user.roleName=='ADMIN' || user.roleName=='MANAGE'"/>
       </el-form-item>
-
-      <el-divider content-position="left">查询结果</el-divider>
-      <el-table :data="data.menus" style="width: 100%" :border="true" table-layout="fixed" :stripe="true"
-                size="small" :highlight-current-row="true" :header-cell-style="headerCellStyle">
-        <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center" v-if="user.roleName=='ADMIN' || user.roleName=='MANAGE'">
-          <template #default="scope">
-            <el-button link type="primary" size="small" @click="showMenuEditDialog(scope)">编辑
-            </el-button>
-            <el-popconfirm title="你确定要删除本条记录吗?" @confirm="deleteMenu(scope)"
-                           icon-color="red"
-                           confirm-button-type="danger">
-              <template #reference>
-                <el-button link type="danger" size="small">删除
-                </el-button>
-              </template>
-            </el-popconfirm>
-          </template>
-        </el-table-column>
-        <el-table-column prop="name" label="菜单名称" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-        <el-table-column prop="menuDesc" label="菜单描述" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-        <el-table-column prop="url" label="菜单url" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-        <el-table-column prop="iconName" label="图标" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-        <el-table-column prop="parentId" label="父菜单" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-        <el-table-column prop="menuLevel" label="菜单层级" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-        <el-table-column prop="orderIndex" label="顺序" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-        <el-table-column prop="fmtCreatedAt" label="创建时间" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-        <el-table-column prop="fmtUpdatedAt" label="修改时间" :show-overflow-tooltip="true" header-align="center"
-                         align="center"/>
-      </el-table>
-      <el-pagination class="page" v-model:page-size="form.pageSize" v-model:current-page="form.pageNum"
-                     layout="->, total, sizes, prev, pager, next, jumper" v-model:total="data.total"
-                     @size-change="queryMenuList()"
-                     @current-change="queryMenuList()" @prev-click="queryMenuList()" @next-click="queryMenuList()"
-                     :small="true" :background="true"
-                     :page-sizes="[5, 10, 20, 50, 100]"/>
     </el-form>
 
-    <el-dialog v-model="dialogFormVisible" :title="dialogTitle" draggable>
+    <el-divider content-position="left">查询结果</el-divider>
+    <el-table :data="data.menus" style="width: 100%" :border="true" table-layout="fixed" :stripe="true"
+              size="small" :highlight-current-row="true" :header-cell-style="headerCellStyle">
+      <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center"
+                       v-if="user.roleName=='ADMIN' || user.roleName=='MANAGE'">
+        <template #default="scope">
+          <el-button link type="primary" size="small" @click="showMenuEditDialog(scope)">编辑
+          </el-button>
+          <el-popconfirm title="你确定要删除本条记录吗?" @confirm="deleteMenu(scope)"
+                         icon-color="red"
+                         confirm-button-type="danger">
+            <template #reference>
+              <el-button link type="danger" size="small">删除
+              </el-button>
+            </template>
+          </el-popconfirm>
+        </template>
+      </el-table-column>
+      <el-table-column prop="name" label="菜单名称" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+      <el-table-column prop="menuDesc" label="菜单描述" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+      <el-table-column prop="url" label="菜单url" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+      <el-table-column prop="iconName" label="图标" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+      <el-table-column prop="parentId" label="父菜单" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+      <el-table-column prop="menuLevel" label="菜单层级" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+      <el-table-column prop="orderIndex" label="顺序" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+      <el-table-column prop="fmtCreatedAt" label="创建时间" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+      <el-table-column prop="fmtUpdatedAt" label="修改时间" :show-overflow-tooltip="true" header-align="center"
+                       align="center"/>
+    </el-table>
+    <el-pagination class="page" v-model:page-size="form.pageSize" v-model:current-page="form.pageNum"
+                   layout="->, total, sizes, prev, pager, next, jumper" v-model:total="data.total"
+                   @size-change="queryMenuList()"
+                   @current-change="queryMenuList()" @prev-click="queryMenuList()" @next-click="queryMenuList()"
+                   :small="true" :background="true"
+                   :page-sizes="[5, 10, 20, 50, 100]"/>
+
+    <el-dialog v-model="dialogFormVisible" :title="dialogTitle" draggable width="40%">
       <el-form :model="menuForm" label-position="right" size="small" :inline="false" ref="formRef" :rules="rules"
                label-width="20%">
         <el-form-item label="菜单名称：" prop="name">
-          <el-input v-model="menuForm.name" type="text" :disabled="dialogTitle=='编辑菜单'"/>
+          <el-autocomplete
+              v-model="menuForm.name"
+              :fetch-suggestions="querySearchMenus"
+              placeholder="输入菜单关键字"
+              clearable
+              style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="菜单描述" prop="menuDesc">
-          <el-input v-model="menuForm.menuDesc"/>
+          <el-input v-model="menuForm.menuDesc" style="width: 100%"/>
         </el-form-item>
         <el-form-item label="菜单url：" prop="url">
-          <el-input v-model="menuForm.url" class="input-with-select">
+          <el-input v-model="menuForm.url" class="input-with-select" style="width: 100%">
             <template #prepend>
               <el-select v-model="menuForm.urlType" placeholder="请选择" style="width: 90px" size="small">
                 <el-option label="路由" value="route:"/>
@@ -269,22 +311,22 @@ const _ = (window as any).ResizeObserver;
           </el-input>
         </el-form-item>
         <el-form-item label="父菜单" prop="parentId">
-          <el-select v-model="menuForm.parentId" placeholder="请选择" size="small" filterable>
+          <el-select v-model="menuForm.parentId" placeholder="请选择" size="small" filterable style="width: 100%">
             <el-option :key="m.name" :label="m.menuDesc" :value="m.name" v-for="m in data.level1Menus"/>
           </el-select>
         </el-form-item>
         <el-form-item label="菜单层级" prop="menuLevel">
-          <el-select v-model="menuForm.menuLevel" placeholder="请选择" size="small">
+          <el-select v-model="menuForm.menuLevel" placeholder="请选择" size="small" style="width: 100%">
             <el-option :key="level.key" :label="level.label" :value="level.key" v-for="level in data.levels"/>
           </el-select>
         </el-form-item>
         <el-form-item label="图标" prop="iconName">
-          <el-select v-model="menuForm.iconName" placeholder="请选择" size="small" filterable>
+          <el-select v-model="menuForm.iconName" placeholder="请选择" size="small" filterable style="width: 100%">
             <el-option :key="icon.key" :label="icon.value" :value="icon.key" v-for="icon in data.iconList"/>
           </el-select>
         </el-form-item>
         <el-form-item label="顺序" prop="orderIndex">
-          <el-input v-model="menuForm.orderIndex" type="number"/>
+          <el-input v-model="menuForm.orderIndex" type="number" style="width: 100%"/>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -304,6 +346,5 @@ const _ = (window as any).ResizeObserver;
   overflow-x: auto;
   overflow-y: hidden;
   width: 96%;
-  height: calc(100vh + 60px);
 }
 </style>

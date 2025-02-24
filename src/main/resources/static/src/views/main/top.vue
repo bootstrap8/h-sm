@@ -105,7 +105,7 @@
                 :key="tab.name"
                 :label="tab.label"
                 :name="tab.name"
-                class="custom-tab-pane"
+                :class="tab.name.includes('NoOverflow')?'custom-tab-pane-ai':'custom-tab-pane'"
             >
               <component :is="tab.component"/>
             </el-tab-pane>
@@ -197,6 +197,9 @@ onMounted(() => {
           }
         })
       }
+    }else {
+      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+      msg(content, "warning")
     }
   }).catch((err: Error) => {
     msg('请求异常', 'error')
@@ -464,8 +467,13 @@ const _ = (window as any).ResizeObserver;
 }
 
 .custom-tab-pane {
-  height: calc(100vh - 156px);
+  height: calc(100vh - 160px);
   overflow-y: auto;
+}
+
+.custom-tab-pane-ai {
+  height: calc(100vh - 160px);
+  overflow-y: hidden;
 }
 
 /* 默认隐藏底部边框线 */

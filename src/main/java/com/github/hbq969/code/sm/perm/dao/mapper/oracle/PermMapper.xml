@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.github.hbq969.code.sm.perm.dao.PermDao">
+    <update id="createMenuPermissions">
+        CREATE TABLE h_menu_perms
+        (
+            app varchar2 (255) NOT NULL,
+            menu_name varchar2 (255) NOT NULL,
+            api_key varchar2 (100) NOT NULL,
+            api_desc varchar2 (255) NOT NULL,
+            CONSTRAINT pk_menu_perm primary key (app, menu_name, api_key)
+        )
+    </update>
+
+    <update id="createRoleMenuPermissions">
+        CREATE TABLE h_role_menu_perms
+        (
+            app varchar2 (255) NOT NULL,
+            role_name varchar2 (255) NOT NULL,
+            menu_name varchar2 (255) NOT NULL,
+            api_key varchar2 (100) NOT NULL,
+            CONSTRAINT pk_role_menu_perm primary key (app, role_name, menu_name, api_key)
+        )
+    </update>
+</mapper>

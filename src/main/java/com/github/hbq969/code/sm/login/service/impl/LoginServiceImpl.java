@@ -16,6 +16,8 @@ import com.github.hbq969.code.sm.login.model.ResetPassword;
 import com.github.hbq969.code.sm.login.model.UserInfo;
 import com.github.hbq969.code.sm.login.service.LoginService;
 import com.github.hbq969.code.sm.login.session.UserContext;
+import com.github.hbq969.code.sm.perm.dao.entity.MenuPermEntity;
+import com.github.hbq969.code.sm.perm.service.CacheService;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.cache.Cache;
@@ -65,6 +67,9 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Value("${spring.application.name}")
     private String app;
+
+    @Autowired
+    private CacheService cacheService;
 
     private Cache<String, HttpSession> sessions;
 
@@ -380,6 +385,8 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         ui.setUserName(user.getUsername());
         ui.setRoleName(user.getRoleName());
         List<MenuEntity> list = loginDao.queryRoleMenus2(app, user.getRoleName());
+        Set<String> permissions = queryPermission(list);
+        ui.setPermissionSet(permissions);
         List<MenuEntity> confMenus = groupSortMenu(list);
         ui.setMenus(confMenus);
         session.setAttribute("h-sm-user", ui);
@@ -387,6 +394,24 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         if (StringUtils.equals("创建", logKey)) {
             sessions.put(session.getId(), session);
         }
+    }
+
+    private Set<String> queryPermission(List<MenuEntity> list) {
+        Set<String> set = new HashSet<>();
+        for (MenuEntity menuEntity : list) {
+            if (menuEntity.getMenuLevel() == 2) {
+                List<MenuPermEntity> pl = cacheService.queryMenuPerms(menuEntity.getName());
+                log.info("加载菜单 {} 的接口信息: {}", menuEntity.getName(),
+                        pl == null ? "[]" : GsonUtils.toJson(pl.stream().map(p -> p.apiInfo()).collect(Collectors.toList())));
+                if (CollectionUtils.isNotEmpty(pl)) {
+                    List<String> perms = pl.stream()
+                            .map(p -> String.join(",", p.getMenuName(), p.getApiKey()))
+                            .collect(Collectors.toList());
+                    set.addAll(perms);
+                }
+            }
+        }
+        return set;
     }
 
     // 对菜单进行分组排序

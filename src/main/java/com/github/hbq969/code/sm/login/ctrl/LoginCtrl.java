@@ -9,9 +9,11 @@ import com.github.hbq969.code.sm.login.model.LoginInfo;
 import com.github.hbq969.code.sm.login.model.PermitInfo;
 import com.github.hbq969.code.sm.login.service.LoginService;
 import com.github.hbq969.code.sm.login.session.UserContext;
+import com.github.hbq969.code.sm.perm.api.SMRequiresPermissions;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,6 +56,7 @@ public class LoginCtrl implements ICommonControl {
     @ApiOperation("获取账号信息")
     @RequestMapping(path = "/user", method = RequestMethod.GET)
     @ResponseBody
+    @SMRequiresPermissions(menu = "User", apiKey = "getUserInfo", apiDesc = "获取账号信息")
     public ReturnMessage<PermitInfo> getUserInfo(HttpServletRequest request) {
         PermitInfo info = new PermitInfo();
         info.setUser(loginService.getUserInfo(request));
