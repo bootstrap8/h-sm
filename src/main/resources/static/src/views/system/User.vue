@@ -13,7 +13,26 @@ const obfs = "969";
 const key = CryptoJS.enc.Utf8.parse(deobfuscate("΍ΊϻΌΌϱϰϺϸΌϽϺϽΈϽϽ", obfs));
 const iv = key
 
-const user = inject('session').user
+// const user = inject('session').user
+
+const user = ref({})
+
+const getUserInfo = () => {
+  axios({
+    url: '/system/user',
+    method: 'get'
+  }).then((res: any) => {
+    if (res.data.state == 'OK') {
+      user.value = res.data.body.user
+    } else {
+      let content = '调用 ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
+      msg(content, "warning")
+    }
+  }).catch((err: Error) => {
+    console.error(err)
+    msg('请求异常', 'error')
+  })
+}
 
 const formLabelWidth = ref('140px')
 const form = reactive({
@@ -287,6 +306,7 @@ const headerCellStyle = () => {
 }
 
 onMounted(() => {
+  getUserInfo()
   queryUserList()
 });
 
