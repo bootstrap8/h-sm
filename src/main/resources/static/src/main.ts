@@ -119,8 +119,14 @@ import recovery6 from "@/components/icon/recovery6.vue";
 import service3 from "@/components/icon/service3.vue";
 import service4 from "@/components/icon/service4.vue";
 import service5 from "@/components/icon/service5.vue";
+let lang = require('element-plus/dist/locale/zh-cn.min.js')
+let language = sessionStorage.getItem('h-sm-lang') || 'zh-CN'
+if(language=='en-US'){
+    lang = require('element-plus/dist/locale/en.min.js')
+}else if(language=='ja-JP'){
+    lang = require('element-plus/dist/locale/ja.min.js')
+}
 
-const zhCn = require('element-plus/dist/locale/zh-cn.min.js')
 
 const app = createApp(App)
 app.component('DashboardIcon', DashboardIcon);
@@ -238,7 +244,9 @@ app.component('service3',service3)
 app.component('service4',service4)
 app.component('service5',service5)
 
-app.use(ElementPlus, {locale: zhCn})
+app.use(ElementPlus, {locale: lang})
 app.use(store)
 app.use(router)
 app.mount('#app')
+
+export default app

@@ -20,6 +20,8 @@ public interface LoginDao {
 
     void createRoleMenus();
 
+    void createSMSystem();
+
     List<RoleEntity> queryRoleList(RoleEntity q);
 
     void saveRoleEntity(RoleEntity entity);

@@ -52,4 +52,13 @@
             CONSTRAINT pk_h_role_menus PRIMARY KEY (app, role_name, menu_name)
         )
     </update>
+
+    <update id="createSMSystem">
+        CREATE TABLE h_sm_info
+        (
+            app varchar2 (255) NOT NULL,
+            info_content clob NOT NULL,
+            CONSTRAINT pk_sm_info primary key (app)
+        )
+    </update>
 </mapper>

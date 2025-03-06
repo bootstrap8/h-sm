@@ -15,7 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Locale;
 
 @RequestMapping(path = "/hbq969-sm/users")
 @Slf4j
@@ -24,6 +27,9 @@ public class UserCtrl implements ICommonControl {
 
     @Autowired
     private LoginService loginService;
+
+    @Autowired
+    private ResourceBundleMessageSource messageSource;
 
     @ApiOperation("分页查询用户信息")
     @RequestMapping(path = "/list", method = RequestMethod.POST)
@@ -42,7 +48,7 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "saveUser", apiDesc = "新增用户")
     public ReturnMessage<?> saveUser(@RequestBody UserEntity user) {
         loginService.saveUserEntity(user);
-        return ReturnMessage.success("保存成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.save.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("修改用户")
@@ -52,7 +58,7 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "updateUser", apiDesc = "修改用户")
     public ReturnMessage<?> updateUser(@RequestBody UserEntity user) {
         loginService.updateUserEntity(user);
-        return ReturnMessage.success("修改成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.update.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("删除用户")
@@ -62,7 +68,7 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "deleteUser", apiDesc = "删除用户")
     public ReturnMessage<?> deleteUser(@RequestParam(name = "username") String username) {
         loginService.deleteUserEntity(username);
-        return ReturnMessage.success("删除成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.delete.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("修改密码")
@@ -73,7 +79,7 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "updatePass", apiDesc = "修改密码")
     public ReturnMessage<?> updatePass(@RequestBody PasswordModify modify) {
         loginService.updatePassword(modify);
-        return ReturnMessage.success("修改成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.update.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("重置密码")
@@ -84,6 +90,6 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "resetPassword", apiDesc = "重置密码")
     public ReturnMessage<?> resetPassword(@RequestBody ResetPassword rp) {
         loginService.resetPassword(rp);
-        return ReturnMessage.success("重置成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.reset.result", null, Locale.getDefault()));
     }
 }

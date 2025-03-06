@@ -9,6 +9,8 @@ import java.util.List;
 public class PermitInfo {
     private UserInfo user;
     private List<MenuEntity> allMenus;
+    private SMInfo smInfo;
+
 
     public boolean isAdmin() {
         return user != null && user.isAdmin();

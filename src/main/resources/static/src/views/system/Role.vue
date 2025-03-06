@@ -6,7 +6,9 @@ import {ref, reactive, onMounted, computed, provide, inject} from 'vue'
 import axios from '@/network'
 import {msg} from '@/utils/Utils'
 import type {FormInstance, FormRules} from 'element-plus'
-import router from "@/router";
+import {getLangData} from "@/i18n/locale";
+
+const langData = getLangData()
 
 const user = ref({})
 
@@ -18,12 +20,12 @@ const getUserInfo = () => {
     if (res.data.state == 'OK') {
       user.value = res.data.body.user
     } else {
-      let content = '调用 ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
+      let content = langData.roleAxiosCall+' ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
       msg(content, "warning")
     }
   }).catch((err: Error) => {
     console.error(err)
-    msg('请求异常', 'error')
+    msg(langData.roleAxiosReqErr, 'error')
   })
 }
 
@@ -54,17 +56,17 @@ const queryRoleList = () => {
       data.roles = res.data.body.list
       data.total = res.data.body.total
     } else {
-      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+      let content = langData.roleAxiosCall+' '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
       msg(content, "warning")
     }
   }).catch((err: Error) => {
     console.log('',err)
-    msg('请求异常', 'error')
+    msg(langData.roleAxiosReqErr, 'error')
   })
 }
 
 const dialogFormVisible = ref(false)
-const dialogTitle = ref('新增角色')
+const dialogTitle = ref(langData.roleDialogTitleAdd)
 const roleForm = reactive({
   name: '',
   desc: ''
@@ -72,7 +74,7 @@ const roleForm = reactive({
 const formRef = ref<FormInstance>()
 const rules = reactive<FormRules>({
   name: [
-    {required: true, message: '不能为空', trigger: 'blur'}
+    {required: true, message: langData.roleFormValidateNotNull, trigger: 'blur'}
   ]
 })
 
@@ -82,7 +84,7 @@ const updateRole = async (formEl: FormInstance | undefined) => {
     if (valid) {
       axios({
         url: '/roles/role',
-        method: dialogTitle.value == '新增角色' ? 'post' : 'put',
+        method: dialogTitle.value == langData.roleDialogTitleAdd ? 'post' : 'put',
         data: roleForm
       }).then((res: any) => {
         if (res.data.state == 'OK') {
@@ -90,12 +92,12 @@ const updateRole = async (formEl: FormInstance | undefined) => {
           dialogFormVisible.value = false
           queryRoleList()
         } else {
-          let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+          let content = langData.roleAxiosCall+' '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
           msg(content, "warning")
         }
       }).catch((err: Error) => {
         console.log('',err)
-        msg('请求异常', 'error')
+        msg(langData.roleAxiosReqErr, 'error')
       })
     }
   })
@@ -103,14 +105,14 @@ const updateRole = async (formEl: FormInstance | undefined) => {
 
 const showRoleAddDialog = () => {
   dialogFormVisible.value = true
-  dialogTitle.value = '新增角色'
+  dialogTitle.value = langData.roleDialogTitleAdd
   roleForm.name = ''
   roleForm.desc = ''
 }
 
 const showRoleEditDialog = (scope) => {
   dialogFormVisible.value = true
-  dialogTitle.value = '编辑角色'
+  dialogTitle.value = langData.roleDialogTitleEdit
   roleForm.name = scope.row.name
   roleForm.desc = scope.row.desc
 }
@@ -127,18 +129,18 @@ const deleteRole = (scope) => {
       msg(res.data.body, 'success')
       queryRoleList()
     } else {
-      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+      let content = langData.roleAxiosCall+' '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
       msg(content, "warning")
     }
   }).catch((err: Error) => {
     console.log('',err)
-    msg('请求异常', 'error')
+    msg(langData.roleAxiosReqErr, 'error')
   })
 }
 
 const dialogFormVisible2 = ref(false)
-const dialogTitle2 = ref('配置菜单')
-const titles = ref(['待选择', '已选择'])
+const dialogTitle2 = ref(langData.roleDialog2Title)
+const titles = ref([langData.roleDialog2Select1, langData.roleDialog2Select2])
 const roleForm2 = reactive({
   role: {
     name: ''
@@ -153,7 +155,7 @@ const roleForm2 = reactive({
 const formRef2 = ref<FormInstance>()
 const rules2 = reactive<FormRules>({
   name: [
-    {required: true, message: '不能为空', trigger: 'blur'}
+    {required: true, message: langData.roleFormValidateNotNull, trigger: 'blur'}
   ]
 })
 
@@ -171,12 +173,12 @@ const updateRoleMenus = async (formEl: FormInstance | undefined) => {
           msg(res.data.body, 'success')
           dialogFormVisible2.value = false
         } else {
-          let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+          let content = langData.roleAxiosCall+' '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
           msg(content, "warning")
         }
       }).catch((err: Error) => {
         console.log('',err)
-        msg('请求异常', 'error')
+        msg(langData.roleAxiosReqErr, 'error')
       })
     }
   })
@@ -184,7 +186,7 @@ const updateRoleMenus = async (formEl: FormInstance | undefined) => {
 
 const showMenuConfigDialog = (scope) => {
   dialogFormVisible2.value = true
-  dialogTitle2.value = '配置菜单(' + scope.row.name + ')'
+  dialogTitle2.value = langData.roleTableOpConfigMenu+'(' + scope.row.name + ')'
   roleForm2.role.name = scope.row.name
   axios({
     url: '/roles/role/menus',
@@ -196,12 +198,12 @@ const showMenuConfigDialog = (scope) => {
       roleForm2.menus = res.data.body.conf
       console.log('all: %o, conf: %o', data.menus, roleForm2.menus)
     } else {
-      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+      let content = langData.roleAxiosCall+' '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
       msg(content, "warning")
     }
   }).catch((err: Error) => {
     console.log('',err)
-    msg('请求异常', 'error')
+    msg(langData.roleAxiosReqErr, 'error')
   })
 }
 
@@ -240,32 +242,32 @@ const _ = (window as any).ResizeObserver;
   <div class="container">
     <el-table :data="data.roles" style="width: 100%" :border="true" table-layout="fixed" :stripe="true"
               size="small" :highlight-current-row="true" :header-cell-style="headerCellStyle">
-      <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center" v-if="user.roleName=='ADMIN'">
+      <el-table-column fixed="left" :label="langData.roleTableHeaderOp" width="180" header-align="center" align="center" v-if="user.roleName=='ADMIN'">
         <template #default="scope">
-          <el-button link type="primary" size="small" @click="showRoleEditDialog(scope)">编辑
+          <el-button link type="primary" size="small" @click="showRoleEditDialog(scope)">{{langData.roleTableOpEdit}}
           </el-button>
-          <el-popconfirm title="删除角色会把关联的账号全部删除，请确认是否删除?" @confirm="deleteRole(scope)"
+          <el-popconfirm :title="langData.roleConfirmDeleteRole" @confirm="deleteRole(scope)"
                          icon-color="red"
                          confirm-button-type="danger">
             <template #reference>
-              <el-button link type="danger" size="small">删除</el-button>
+              <el-button link type="danger" size="small">{{langData.roleTableOpDelete}}</el-button>
             </template>
           </el-popconfirm>
-          <el-button link type="primary" size="small" @click="showMenuConfigDialog(scope)">配置菜单</el-button>
+          <el-button link type="primary" size="small" @click="showMenuConfigDialog(scope)">{{langData.roleTableOpConfigMenu}}</el-button>
         </template>
       </el-table-column>
-      <el-table-column fixed="left" label="操作" width="180" header-align="center" align="center" v-else-if="user.roleName=='MANAGE'">
+      <el-table-column fixed="left" :label="langData.roleTableHeaderOp" width="180" header-align="center" align="center" v-else-if="user.roleName=='MANAGE'">
         <template #default="scope">
-          <el-button link type="primary" size="small" @click="showMenuConfigDialog(scope)">配置菜单</el-button>
+          <el-button link type="primary" size="small" @click="showMenuConfigDialog(scope)">{{langData.roleTableOpConfigMenu}}</el-button>
         </template>
       </el-table-column>
-      <el-table-column prop="name" label="名称" :show-overflow-tooltip="true" header-align="center"
+      <el-table-column prop="name" :label="langData.roleTableHeaderRoleName" :show-overflow-tooltip="true" header-align="center"
                        align="center"/>
-      <el-table-column prop="desc" label="描述" :show-overflow-tooltip="true" header-align="center"
+      <el-table-column prop="desc" :label="langData.roleTableHeaderRoleDesc" :show-overflow-tooltip="true" header-align="center"
                        align="center"/>
-      <el-table-column prop="fmtCreatedAt" label="创建时间" :show-overflow-tooltip="true" header-align="center"
+      <el-table-column prop="fmtCreatedAt" :label="langData.roleTableHeaderCreateTime" :show-overflow-tooltip="true" header-align="center"
                        align="center"/>
-      <el-table-column prop="fmtUpdatedAt" label="修改时间" :show-overflow-tooltip="true" header-align="center"
+      <el-table-column prop="fmtUpdatedAt" :label="langData.roleTableHeaderUpdateTime" :show-overflow-tooltip="true" header-align="center"
                        align="center"/>
     </el-table>
     <el-pagination class="page" v-model:page-size="form.pageSize" v-model:current-page="form.pageNum"
@@ -275,45 +277,44 @@ const _ = (window as any).ResizeObserver;
                    :small="true" :background="true"
                    :page-sizes="[5, 10, 20, 50, 100]" v-if="user.roleName=='ADMIN'"/>
     <div class="addBtn">
-      <el-button :icon="Edit" size="small" round @click="showRoleAddDialog()" v-if="user.roleName=='ADMIN'">添加新角色
+      <el-button :icon="Edit" size="small" round @click="showRoleAddDialog()" v-if="user.roleName=='ADMIN'">{{langData.roleAdd}}
       </el-button>
     </div>
 
     <el-dialog v-model="dialogFormVisible" :title="dialogTitle" draggable>
       <el-form :model="roleForm" label-position="right" size="small" :inline="false" ref="formRef" :rules="rules"
                label-width="20%">
-        <el-form-item label="角色名称：" prop="name">
-          <el-input v-model="roleForm.name" type="text" :disabled="dialogTitle=='编辑角色'"/>
+        <el-form-item :label="langData.roleDialogRoleName" prop="name">
+          <el-input v-model="roleForm.name" type="text" :disabled="dialogTitle==langData.roleDialogTitleEdit"/>
         </el-form-item>
-        <el-form-item label="校色描述：" prop="url">
+        <el-form-item :label="langData.roleDialogRoleDesc" prop="url">
           <el-input v-model="roleForm.desc" type="textarea" rows="3"/>
         </el-form-item>
       </el-form>
       <template #footer>
                 <span class="dialog-footer">
-                  <el-button @click="dialogFormVisible = false">取消</el-button>
-                  <el-button type="primary" @click="updateRole(formRef)">保存</el-button>
+                  <el-button @click="dialogFormVisible = false">{{langData.roleDialogBtnCancel}}</el-button>
+                  <el-button type="primary" @click="updateRole(formRef)">{{langData.roleDialogBtnSave}}</el-button>
                 </span>
       </template>
     </el-dialog>
 
 
-    <el-dialog v-model="dialogFormVisible2" :title="dialogTitle2" draggable>
+    <el-dialog v-model="dialogFormVisible2" :title="langData.roleDialog2Title" draggable>
       <el-form :model="roleForm2" label-position="right" size="small" :inline="false" ref="formRef2" :rules="rules2"
                label-width="20%">
         <el-transfer
             v-model="roleForm2.menus"
             filterable
             :filter-method="(query, item) => item.label.includes(query)"
-            filter-placeholder="输入菜单名"
             :data="data.menus"
             :titles="titles"
         />
       </el-form>
       <template #footer>
                 <span class="dialog-footer">
-                  <el-button @click="dialogFormVisible2 = false">取消</el-button>
-                  <el-button type="primary" @click="updateRoleMenus(formRef2)">保存</el-button>
+                  <el-button @click="dialogFormVisible2 = false">{{langData.roleDialog2BtnCancel}}</el-button>
+                  <el-button type="primary" @click="updateRoleMenus(formRef2)">{{langData.roleDialog2BtnSave}}</el-button>
                 </span>
       </template>
     </el-dialog>

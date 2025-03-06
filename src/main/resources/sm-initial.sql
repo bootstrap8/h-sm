@@ -1,3 +1,10 @@
+delete from h_roles where app='h-sm' and name in ('ADMIN','MANAGE','USER');
+delete from h_menus where app='h-sm' and name in ('system','Role','User','Menu','AI','SiliconFlow');
+delete from h_dict_base where dict_name='menu,icon' and app='common';
+delete from h_dict_pairs where dict_name='menu,icon' and app='common';
+delete from h_sm_info where app='h-sm';
+
+insert into h_sm_info(app,info_content) values('h-sm','{"title":"SM模版"}');
 insert into h_roles(app,name,description,created_at) values('h-sm','ADMIN','超级管理员',1735800456);
 insert into h_roles(app,name,description,created_at) values('h-sm','MANAGE','维护管理员',1735800456);
 insert into h_roles(app,name,description,created_at) values('h-sm','USER','普通用户',1735800456);
@@ -5,8 +12,6 @@ insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,ico
 insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','Role','角色管理','/system/Role','system',0,2,'RoleIcon',1735800456);
 insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','User','用户管理','/system/User','system',1,2,'UserIcon',1735800456);
 insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','Menu','菜单管理','/system/Menu','system',2,2,'MenuIcon',1735800456);
-insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','AI','AI 大模型','/ai','-',0,1,'AI2',1735800456);
-insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','SiliconFlow','硅基流动','/ai/SiliconFlow_NoOverflow','AI',0,2,'APIIcon',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','admin','$2a$10$2n7McJFmaxR78hcEU0TELuGGLwpZtqiJDKIolf7SnSETwBye8AYpW','ADMIN',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','manage','$2a$10$oHdG4ticIvzG.8BlBjI9HuC3c9RFSD3u.vr8aphNXC4.SckKfIyLq','MANAGE',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','user','$2a$10$qRoxm0i0yb1E0MVId.NjL.A/Ac3W4puydYhLeufA5zQ8KJmiAKBIO','USER',1735800456);
@@ -123,7 +128,7 @@ insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','serv
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','timer1','定时1');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','backup3','备份3');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','backup4','备份4');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','recovery3','恢复3');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','recovery3','恢复3');3
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','profile2','环境2');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','recovery4','恢复4');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','recovery5','恢复5');
@@ -131,3 +136,25 @@ insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','reco
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service3','服务3');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service4','服务4');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service5','服务5');
+
+delete from h_dict_base where dict_name='lang,zh-CN';
+delete from h_dict_pairs where dict_name='lang,zh-CN';
+
+insert into h_dict_base(dict_name,dict_desc,dict_source,key_column,val_column,app) values('lang,zh-CN','语言,中文',1,'key','value','common');
+
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','axiosRequestErr','请求异常');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','axiosRequestCallKey','调用');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','formValidateNotNull','不能为空');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginAnswerCalc','请计算');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginAnswerErr','答案错误，请重新输入');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginTitle','登录你的账号');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginSpan','开始使用我们的应用维护平台，只需创建一个帐户并享受体验。');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginFormPlaceholderUserName','请输入账号');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginFormPlaceholderPassword','请输入密码');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginFormBtnLogin','登录');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginFormBtnSpan','登   录');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginModalTitle','安全保护');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginModalP','检测到本次操作需输入验证码');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginModalPlaceholderCode','请输入验证码');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginModalBtnConfirm','确定');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,zh-CN','loginModalBtnCancel','取消');

@@ -56,4 +56,14 @@
         ) ENGINE = InnoDB
           DEFAULT CHARSET = utf8
     </update>
+
+    <update id="createSMSystem">
+        CREATE TABLE h_sm_info
+        (
+            app          varchar(255) NOT NULL,
+            info_content longtext     NOT NULL,
+            CONSTRAINT pk_sm_info primary key (app)
+        ) ENGINE = InnoDB
+          DEFAULT CHARSET = utf8
+    </update>
 </mapper>

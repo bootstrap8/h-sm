@@ -1,3 +1,292 @@
+
+<script lang="ts" setup>
+import {Expand, Fold, SwitchButton,} from '@element-plus/icons-vue';
+import {
+  defineAsyncComponent,
+  markRaw,
+  onMounted,
+  reactive,
+  ref,
+  resolveComponent,
+  defineComponent,
+  h,
+  nextTick,
+  computed,
+  provide,
+  inject
+} from 'vue';
+import axios from '@/network';
+import {msg} from '@/utils/Utils';
+import router from '@/router'
+import {getLangData} from "@/i18n/locale";
+
+const langData = getLangData()
+
+const layout = ref('main_left')
+
+const data = reactive({
+  currentPage: langData.mainMainPage,
+  user: {},
+  smInfo: {},
+  adminMenus: [],
+  menus: [],
+  menuEntry: {},
+})
+provide('session', data)
+const menuMap = reactive({})
+const logout = () => {
+  axios({
+    url: '/system/logout',
+    method: 'post'
+  }).then((res: any) => {
+    if (res.data.state == 'OK') {
+      router.push({path: '/'})
+    } else {
+      msg(res.data.errorMessage, 'warning')
+    }
+  }).catch((err: Error) => {
+    msg('请求异常', 'error')
+  })
+}
+onMounted(() => {
+  queryUserinfo()
+})
+
+const queryUserinfo = () => {
+  axios({
+    url: '/system/user',
+    method: 'get'
+  }).then((res: any) => {
+    if (res.data.state == 'OK') {
+
+      let user = res.data.body.user
+      data.smInfo = res.data.body.smInfo
+      data.user.userName = user.userName
+      data.user.roleName = user.roleName
+      data.menus = user.menus
+      if (data.menus && data.menus.length > 0) {
+        data.menus.forEach(m => {
+          data.menuEntry[m.name] = m.menuDesc
+          menuMap[m.url] = m.menuDesc
+          if (m.menus && m.menus.length > 0) {
+            m.menus.forEach(sm => {
+              data.menuEntry[sm.name] = sm.menuDesc
+              menuMap[sm.url] = sm.menuDesc
+            })
+          }
+        })
+      }
+      data.adminMenus = res.data.body.allMenus
+      if (data.adminMenus && data.adminMenus.length > 0) {
+        data.adminMenus.forEach(item => {
+          menuMap[item.url] = item.menuDesc
+          if (item.menus && item.menus.length > 0) {
+            item.menus.forEach(sItem => {
+              menuMap[sItem.url] = sItem.menuDesc
+            })
+          }
+        })
+      }
+    } else {
+      let content = '调用 ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
+      msg(content, "warning")
+    }
+  }).catch((err: Error) => {
+    console.error(err)
+    msg('请求异常', 'error')
+  })
+}
+
+const getIconComponent = (iconName: string) => {
+  return resolveComponent(iconName);
+};
+
+// 菜单收起状态
+const isCollapse = ref(false);
+
+// 当前激活的菜单项
+const activeMenu = ref('1');
+
+// 当前激活的 Tab 页
+const activeTab = ref('');
+
+// Tab 页列表
+const tabs = ref<{ name: string; label: string; component: any }[]>([]);
+
+// 切换菜单收起状态
+const toggleCollapse = () => {
+  isCollapse.value = !isCollapse.value;
+};
+
+const checkUrlStatus = async (url: string) => {
+  try {
+    const response = await fetch(url, {method: 'HEAD'});
+    return response.status;
+  } catch (error) {
+    console.error('URL 检查失败:', error);
+    return 500;
+  }
+};
+
+const addTimestamp = (iframeUrl) => {
+  let timestamp = new Date().getTime();
+  if (iframeUrl.includes('#')) {
+    let array = iframeUrl.split('#')
+    if (array[0].includes('?')) {
+      iframeUrl = array[0] + '&h_sm_t=' + timestamp + '#' + array[1]
+    } else {
+      iframeUrl = array[0] + '?h_sm_t=' + timestamp + '#' + array[1]
+    }
+  } else {
+    if (iframeUrl.includes('?')) {
+      iframeUrl = iframeUrl + '&h_sm_t=' + timestamp
+    } else {
+      iframeUrl = iframeUrl + '?h_sm_t=' + timestamp
+    }
+  }
+  return iframeUrl
+}
+
+// 处理菜单项选择
+const handleMenuSelect = async (index: string) => {
+  let component;
+
+  if (index.startsWith('http:') || index.startsWith('https:')) {
+    // 如果是外部链接，直接在新标签页打开
+    window.open(index, '_blank');
+  } else {
+    activeMenu.value = index;
+    let menuName = menuMap[index];
+    langData.mainMainPage = menuName;
+
+    // 检查是否已经存在该 Tab
+    const tab = tabs.value.find((tab) => tab.name === index);
+    if (!tab) {
+      if (index.startsWith('inner:')) {
+        // 处理内部 iframe
+        let iframeUrl = index.substring(6);
+        iframeUrl = addTimestamp(iframeUrl)
+        console.log('加载菜单链接: ', iframeUrl)
+        component = defineComponent({
+          setup() {
+            const iframe = ref<HTMLIFrameElement | null>(null);
+            const isLoading = ref(true); // 加载状态
+
+            const onIframeLoad = () => {
+              if (iframe.value && iframe.value.contentWindow?.document.body) {
+                // 动态设置 iframe 的高度
+                let contentHeight = iframe.value.contentWindow.document.body.scrollHeight;
+                if (contentHeight < 400) {
+                  contentHeight = window.innerHeight - 156;
+                }
+                iframe.value.style.height = `${contentHeight}px`;
+                console.log('iframe 高度已调整:', contentHeight);
+
+                // 监听内容变化
+                const observer = new MutationObserver(() => {
+                  let newHeight = iframe.value.contentWindow.document.body.scrollHeight;
+                  if (newHeight <= 0) {
+                    return
+                  }
+                  if (newHeight < 400) {
+                    newHeight = window.innerHeight - 156;
+                  }
+                  iframe.value.style.height = `${newHeight}px`;
+                  console.log('iframe 高度动态调整:', newHeight);
+                });
+
+                observer.observe(iframe.value.contentWindow.document.body, {
+                  childList: true,
+                  subtree: true,
+                });
+
+                // 关闭加载状态
+                isLoading.value = false;
+              }
+            };
+
+            return {iframeUrl, onIframeLoad, iframe, isLoading};
+          },
+          render() {
+            return h('div', {style: {width: '100%', height: '100%', position: 'relative'}}, [
+              // 加载动画
+              this.isLoading
+                  ? h('div', {
+                    style: {
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }
+                  }, '加载中...')
+                  : null,
+              // iframe
+              h('iframe', {
+                src: this.iframeUrl,
+                style: {width: '100%', height: '100%', border: 'none'},
+                onLoad: this.onIframeLoad,
+                ref: 'iframe',
+              }),
+            ]);
+          },
+        });
+      } else {
+        // 处理内部 Vue 组件
+        component = defineAsyncComponent(() => import(`@/views${index}.vue`))
+      }
+
+      // 将组件添加到 tabs
+      tabs.value.push({
+        name: index,
+        label: menuName,
+        component: markRaw(component),
+      });
+    }
+
+    // 激活当前 Tab
+    activeTab.value = index;
+  }
+};
+
+// 移除 Tab 页
+const removeTab = (tabName: string) => {
+  const index = tabs.value.findIndex((tab) => tab.name === tabName);
+  // console.log("关闭tab: ",tabName)
+  tabs.value.splice(index, 1);
+  if (tabName === activeTab.value) {
+    activeTab.value = tabs.value[0]?.name || '';
+  }
+};
+
+const refreshPage = () => {
+  window.location.reload();
+};
+
+const tabClick = (pane, ev) => {
+}
+
+// 防抖函数
+const debounce = (callback: (...args: any[]) => void, delay: number) => {
+  let tid: any;
+  return function (...args: any[]) {
+    const ctx = self;
+    tid && clearTimeout(tid);
+    tid = setTimeout(() => {
+      callback.apply(ctx, args);
+    }, delay);
+  };
+};
+
+// 重写 ResizeObserver
+const _ = (window as any).ResizeObserver;
+(window as any).ResizeObserver = class ResizeObserver extends _ {
+  constructor(callback: (...args: any[]) => void) {
+    callback = debounce(callback, 20);
+    super(callback);
+  }
+};
+</script>
+
 <template>
   <div class="container">
     <el-container style="height: 100vh; overflow: hidden; border-radius: 8px;">
@@ -6,7 +295,7 @@
           <el-icon size="20">
             <component :is="getIconComponent('HomeIcon')"/>
           </el-icon>
-          <span style="font-size:1em;margin-left: 10px">H-SM</span>
+          <span style="font-size:1em;margin-left: 10px">{{ data.smInfo.title }}</span>
         </div>
         <div style="display: flex; align-items: center;">
           <el-switch
@@ -16,8 +305,8 @@
               style="--el-switch-on-color: #79BBFF; --el-switch-off-color: #95D475;margin-right: 5px"
               active-value="main_left"
               inactive-value="main_top"
-              active-text="上下布局"
-              inactive-text="左右布局"
+              :active-text="langData.mainLayoutUd"
+              :inactive-text="langData.mainLayoutLr"
               @change="router.push({path:`/${layout}`})"
           />
           <!--          <TimeComponent/>-->
@@ -107,8 +396,8 @@
                 style="height: 39px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background-color: #fff; border-bottom: 1px solid #e4e7ed;">
               <!-- 导航面包屑 -->
               <el-breadcrumb separator="/">
-                <el-breadcrumb-item>首页</el-breadcrumb-item>
-                <el-breadcrumb-item>{{ data.currentPage }}</el-breadcrumb-item>
+                <el-breadcrumb-item>{{ langData.mainFirstPage}}</el-breadcrumb-item>
+                <el-breadcrumb-item>{{ langData.mainMainPage }}</el-breadcrumb-item>
               </el-breadcrumb>
             </div>
 
@@ -246,283 +535,3 @@
   display: none; /* 选中状态隐藏分隔线 */
 }
 </style>
-
-<script lang="ts" setup>
-import {Expand, Fold, SwitchButton,} from '@element-plus/icons-vue';
-import {
-  defineAsyncComponent,
-  markRaw,
-  onMounted,
-  reactive,
-  ref,
-  resolveComponent,
-  defineComponent,
-  h,
-  nextTick,
-  computed,
-  provide,
-  inject
-} from 'vue';
-import axios from '@/network';
-import {msg} from '@/utils/Utils';
-import router from '@/router'
-import TimeComponent from '@/components/TimeComponent.vue';
-
-const layout = ref('main_left')
-
-const data = reactive({
-  currentPage: '主页',
-  user: {},
-  adminMenus: [],
-  menus: [],
-  menuEntry: {}
-})
-provide('session', data)
-const menuMap = reactive({})
-const logout = () => {
-  axios({
-    url: '/system/logout',
-    method: 'post'
-  }).then((res: any) => {
-    if (res.data.state == 'OK') {
-      router.push({path: '/login'})
-    } else {
-      msg(res.data.errorMessage, 'warning')
-    }
-  }).catch((err: Error) => {
-    msg('请求异常', 'error')
-  })
-}
-onMounted(() => {
-  axios({
-    url: '/system/user',
-    method: 'get'
-  }).then((res: any) => {
-    if (res.data.state == 'OK') {
-
-      let user = res.data.body.user
-      data.user.userName = user.userName
-      data.user.roleName = user.roleName
-      data.menus = user.menus
-      if (data.menus && data.menus.length > 0) {
-        data.menus.forEach(m => {
-          data.menuEntry[m.name] = m.menuDesc
-          menuMap[m.url] = m.menuDesc
-          if (m.menus && m.menus.length > 0) {
-            m.menus.forEach(sm => {
-              data.menuEntry[sm.name] = sm.menuDesc
-              menuMap[sm.url] = sm.menuDesc
-            })
-          }
-        })
-      }
-      data.adminMenus = res.data.body.allMenus
-      if (data.adminMenus && data.adminMenus.length > 0) {
-        data.adminMenus.forEach(item => {
-          menuMap[item.url] = item.menuDesc
-          if (item.menus && item.menus.length > 0) {
-            item.menus.forEach(sItem => {
-              menuMap[sItem.url] = sItem.menuDesc
-            })
-          }
-        })
-      }
-    } else {
-      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
-      msg(content, "warning")
-    }
-  }).catch((err: Error) => {
-    console.error(err)
-    msg('请求异常', 'error')
-  })
-})
-
-const getIconComponent = (iconName: string) => {
-  return resolveComponent(iconName);
-};
-
-// 菜单收起状态
-const isCollapse = ref(false);
-
-// 当前激活的菜单项
-const activeMenu = ref('1');
-
-// 当前激活的 Tab 页
-const activeTab = ref('');
-
-// Tab 页列表
-const tabs = ref<{ name: string; label: string; component: any }[]>([]);
-
-// 切换菜单收起状态
-const toggleCollapse = () => {
-  isCollapse.value = !isCollapse.value;
-};
-
-const checkUrlStatus = async (url: string) => {
-  try {
-    const response = await fetch(url, {method: 'HEAD'});
-    return response.status;
-  } catch (error) {
-    console.error('URL 检查失败:', error);
-    return 500;
-  }
-};
-
-const addTimestamp = (iframeUrl) => {
-  let timestamp = new Date().getTime();
-  if (iframeUrl.includes('#')) {
-    let array = iframeUrl.split('#')
-    if (array[0].includes('?')) {
-      iframeUrl = array[0] + '&h_sm_t=' + timestamp + '#' + array[1]
-    } else {
-      iframeUrl = array[0] + '?h_sm_t=' + timestamp + '#' + array[1]
-    }
-  } else {
-    if (iframeUrl.includes('?')) {
-      iframeUrl = iframeUrl + '&h_sm_t=' + timestamp
-    } else {
-      iframeUrl = iframeUrl + '?h_sm_t=' + timestamp
-    }
-  }
-  return iframeUrl
-}
-
-// 处理菜单项选择
-const handleMenuSelect = async (index: string) => {
-  let component;
-
-  if (index.startsWith('http:') || index.startsWith('https:')) {
-    // 如果是外部链接，直接在新标签页打开
-    window.open(index, '_blank');
-  } else {
-    activeMenu.value = index;
-    let menuName = menuMap[index];
-    data.currentPage = menuName;
-
-    // 检查是否已经存在该 Tab
-    const tab = tabs.value.find((tab) => tab.name === index);
-    if (!tab) {
-      if (index.startsWith('inner:')) {
-        // 处理内部 iframe
-        let iframeUrl = index.substring(6);
-        iframeUrl = addTimestamp(iframeUrl)
-        console.log('加载菜单链接: ', iframeUrl)
-        component = defineComponent({
-          setup() {
-            const iframe = ref<HTMLIFrameElement | null>(null);
-            const isLoading = ref(true); // 加载状态
-
-            const onIframeLoad = () => {
-              if (iframe.value && iframe.value.contentWindow?.document.body) {
-                // 动态设置 iframe 的高度
-                let contentHeight = iframe.value.contentWindow.document.body.scrollHeight;
-                if (contentHeight < 400) {
-                  contentHeight = window.innerHeight - 156;
-                }
-                iframe.value.style.height = `${contentHeight}px`;
-                console.log('iframe 高度已调整:', contentHeight);
-
-                // 监听内容变化
-                const observer = new MutationObserver(() => {
-                  let newHeight = iframe.value.contentWindow.document.body.scrollHeight;
-                  if (newHeight <= 0) {
-                    return
-                  }
-                  if (newHeight < 400) {
-                    newHeight = window.innerHeight - 156;
-                  }
-                  iframe.value.style.height = `${newHeight}px`;
-                  console.log('iframe 高度动态调整:', newHeight);
-                });
-
-                observer.observe(iframe.value.contentWindow.document.body, {
-                  childList: true,
-                  subtree: true,
-                });
-
-                // 关闭加载状态
-                isLoading.value = false;
-              }
-            };
-
-            return {iframeUrl, onIframeLoad, iframe, isLoading};
-          },
-          render() {
-            return h('div', {style: {width: '100%', height: '100%', position: 'relative'}}, [
-              // 加载动画
-              this.isLoading
-                  ? h('div', {
-                    style: {
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)'
-                    }
-                  }, '加载中...')
-                  : null,
-              // iframe
-              h('iframe', {
-                src: this.iframeUrl,
-                style: {width: '100%', height: '100%', border: 'none'},
-                onLoad: this.onIframeLoad,
-                ref: 'iframe',
-              }),
-            ]);
-          },
-        });
-      } else {
-        // 处理内部 Vue 组件
-        component = defineAsyncComponent(() => import(`@/views${index}.vue`))
-      }
-
-      // 将组件添加到 tabs
-      tabs.value.push({
-        name: index,
-        label: menuName,
-        component: markRaw(component),
-      });
-    }
-
-    // 激活当前 Tab
-    activeTab.value = index;
-  }
-};
-
-// 移除 Tab 页
-const removeTab = (tabName: string) => {
-  const index = tabs.value.findIndex((tab) => tab.name === tabName);
-  // console.log("关闭tab: ",tabName)
-  tabs.value.splice(index, 1);
-  if (tabName === activeTab.value) {
-    activeTab.value = tabs.value[0]?.name || '';
-  }
-};
-
-const refreshPage = () => {
-  window.location.reload();
-};
-
-const tabClick = (pane, ev) => {
-}
-
-// 防抖函数
-const debounce = (callback: (...args: any[]) => void, delay: number) => {
-  let tid: any;
-  return function (...args: any[]) {
-    const ctx = self;
-    tid && clearTimeout(tid);
-    tid = setTimeout(() => {
-      callback.apply(ctx, args);
-    }, delay);
-  };
-};
-
-// 重写 ResizeObserver
-const _ = (window as any).ResizeObserver;
-(window as any).ResizeObserver = class ResizeObserver extends _ {
-  constructor(callback: (...args: any[]) => void) {
-    callback = debounce(callback, 20);
-    super(callback);
-  }
-};
-</script>

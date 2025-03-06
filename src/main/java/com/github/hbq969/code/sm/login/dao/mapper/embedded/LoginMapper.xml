@@ -52,4 +52,13 @@
             primary key (app, role_name, menu_name)
         )
     </update>
+
+    <update id="createSMSystem">
+        CREATE TABLE h_sm_info
+        (
+            app varchar(255) NOT NULL,
+            info_content clob NOT NULL,
+            primary key (app)
+        )
+    </update>
 </mapper>

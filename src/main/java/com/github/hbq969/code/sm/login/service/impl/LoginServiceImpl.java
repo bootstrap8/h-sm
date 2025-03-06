@@ -1,6 +1,9 @@
 package com.github.hbq969.code.sm.login.service.impl;
 
 import com.github.hbq969.code.common.spring.context.SpringContext;
+import com.github.hbq969.code.common.spring.i18n.LangInfo;
+import com.github.hbq969.code.common.spring.i18n.LanguageChangeListener;
+import com.github.hbq969.code.common.spring.i18n.LanguageEvent;
 import com.github.hbq969.code.common.utils.GsonUtils;
 import com.github.hbq969.code.common.utils.StrUtils;
 import com.github.hbq969.code.dict.service.api.impl.MapDictHelperImpl;
@@ -10,10 +13,8 @@ import com.github.hbq969.code.sm.login.dao.entity.MenuEntity;
 import com.github.hbq969.code.sm.login.dao.entity.RoleEntity;
 import com.github.hbq969.code.sm.login.dao.entity.RoleMenuEntity;
 import com.github.hbq969.code.sm.login.dao.entity.UserEntity;
-import com.github.hbq969.code.sm.login.model.LoginInfo;
-import com.github.hbq969.code.sm.login.model.PasswordModify;
-import com.github.hbq969.code.sm.login.model.ResetPassword;
-import com.github.hbq969.code.sm.login.model.UserInfo;
+import com.github.hbq969.code.sm.login.event.SMInfoEvent;
+import com.github.hbq969.code.sm.login.model.*;
 import com.github.hbq969.code.sm.login.service.LoginService;
 import com.github.hbq969.code.sm.login.session.UserContext;
 import com.github.hbq969.code.sm.perm.dao.entity.MenuPermEntity;
@@ -23,13 +24,18 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
+import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -45,13 +51,14 @@ import javax.servlet.http.HttpSession;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class LoginServiceImpl implements LoginService, InitializingBean {
+public class LoginServiceImpl implements LoginService, InitializingBean, LanguageChangeListener {
 
     @Autowired
     private LoginDao loginDao;
@@ -70,6 +77,9 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
     @Autowired
     private CacheService cacheService;
+
+    @Autowired
+    private ResourceBundleMessageSource messageSource;
 
     private Cache<String, HttpSession> sessions;
 
@@ -108,12 +118,16 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
             loginDao.createRoleMenus();
         } catch (Exception e) {
         }
+        try {
+            loginDao.createSMSystem();
+        } catch (Exception e) {
+        }
         initialScript();
     }
 
     private void initialScript() {
         try {
-            log.debug("读取 {}, 编码格式: {}", conf.getInitScriptFile(), conf.getInitScriptFileCharset());
+            log.info("h-sm login模块重新初始化脚本数据，{}, {}", conf.getInitScriptFile(), conf.getInitScriptFileCharset());
             List<String> lines = IOUtils.readLines(LoginServiceImpl.class.getResourceAsStream("/" + conf.getInitScriptFile()), Charset.forName(conf.getInitScriptFileCharset()));
             List<String> box = new ArrayList<>();
             for (String line : lines) {
@@ -127,9 +141,6 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
                     if (sql.endsWith(";")) {
                         sql = sql.substring(0, sql.length() - 1);
                     }
-                    if (log.isDebugEnabled()) {
-                        log.debug(sql);
-                    }
                     try {
                         context.getBean(JdbcTemplate.class).update(sql);
                     } catch (DataAccessException e) {
@@ -139,7 +150,45 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
 
             }
         } catch (Exception e) {
+            log.error("", e);
+        } finally {
             dict.reloadImmediately();
+        }
+        loadSMInfo(new SMInfoEvent("h-sm"));
+    }
+
+    @Override
+    public void onChange(LangInfo langInfo) {
+        log.info("h-sm login模块监听到语言变化通知: {}", GsonUtils.toJson(langInfo));
+        String lang = langInfo.getLang();
+        conf.setInitScriptFile(String.format("sm-initial_%s.sql", lang));
+        conf.setLanguage(lang);
+        initialScript();
+    }
+
+    @Override
+    public String listenerName() {
+        return "h-sm/login";
+    }
+
+    @Override
+    public int listenerOrder() {
+        return Integer.MIN_VALUE;
+    }
+
+
+    @Override
+    public void loadSMInfo(SMInfoEvent event) {
+        log.info("{} 模块，监听到h-sm信息变化事件", event.getSource());
+        try {
+            String sql = "select info_content AS \"info\" from h_sm_info where app=?";
+            Map map = context.getBean(JdbcTemplate.class).queryForMap(sql, new Object[]{app}, new int[]{Types.VARCHAR});
+            log.info("加载sm信息, {}, {}, 加载到sm信息: {}", sql, app, GsonUtils.toJson(map));
+            String info = MapUtils.getString(map, "info");
+            SMInfo smInfo = GsonUtils.fromJson(info, SMInfo.class);
+            conf.setSmInfo(smInfo);
+        } catch (Exception e) {
+            log.error("加载sm信息异常", e);
         }
     }
 
@@ -186,7 +235,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
     public void deleteRoleEntity(String roleName) {
         UserInfo ui = UserContext.get();
         if (ui == null || !StringUtils.equals("ADMIN", ui.getRoleName())) {
-            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+            throw new UnsupportedOperationException(messageSource.getMessage("service.login.permission.adminOnly", null, Locale.getDefault()));
         }
         loginDao.deleteMenuEntities(app, roleName);
         loginDao.deleteUserEntities(app, roleName);
@@ -231,7 +280,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
     public void deleteUserEntity(String username) {
         UserInfo ui = UserContext.get();
         if (null == ui || !StringUtils.equals("ADMIN", ui.getRoleName())) {
-            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+            throw new UnsupportedOperationException(messageSource.getMessage("service.login.permission.adminOnly", null, Locale.getDefault()));
         }
         loginDao.deleteUserEntity(app, username);
     }
@@ -239,15 +288,15 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
     @Override
     public void updatePassword(PasswordModify passwordModify) {
         UserInfo ui = UserContext.get();
-        if (null == ui || !StringUtils.equals(ui.getUserName(), passwordModify.getUsername())) {
-            throw new UnsupportedOperationException("不能修改别人的密码");
+        if (null == ui || (!ui.isAdmin() && !StringUtils.equals(ui.getUserName(), passwordModify.getUsername()))) {
+            throw new UnsupportedOperationException(messageSource.getMessage("service.login.pwd.doNot", null, Locale.getDefault()));
         }
         UserEntity ue = loginDao.queryUserEntity(app, passwordModify.getUsername());
         if (ue == null) {
-            throw new UnsupportedOperationException("用户不存在");
+            throw new UnsupportedOperationException(messageSource.getMessage("service.login.username.notExists", null, Locale.getDefault()));
         }
         if (!encoder.matches(passwordModify.getOldPassword(), ue.getPassword())) {
-            throw new IllegalArgumentException("老密码不对");
+            throw new IllegalArgumentException(messageSource.getMessage("service.login.oldPwd.notRight", null, Locale.getDefault()));
         }
         passwordModify.hash(encoder);
         loginDao.updateUserPassword(app, passwordModify);
@@ -257,10 +306,10 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
     public void resetPassword(ResetPassword rp) {
         UserInfo ui = UserContext.get();
         if (null == ui || !StringUtils.equals("ADMIN", ui.getRoleName())) {
-            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+            throw new UnsupportedOperationException(messageSource.getMessage("service.login.permission.adminOnly", null, Locale.getDefault()));
         }
         if (!rp.same()) {
-            throw new IllegalArgumentException("两次密码不一致，请检查");
+            throw new IllegalArgumentException(messageSource.getMessage("service.login.pwd.twiceWrong", null, Locale.getDefault()));
         }
         PasswordModify modify = new PasswordModify();
         modify.setUsername(rp.getUsername());
@@ -313,7 +362,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
     public void deleteMenuEntity(String name) {
         UserInfo ui = UserContext.get();
         if (null == ui || (!StringUtils.equals("ADMIN", ui.getRoleName()) && MenuEntity.SYSTEM_MENUS.contains(name))) {
-            throw new UnsupportedOperationException("此操作只允许ADMIN角色");
+            throw new UnsupportedOperationException(messageSource.getMessage("service.login.permission.adminOnly", null, Locale.getDefault()));
         }
         loginDao.deleteMenuEntity(app, name);
         loginDao.deleteMenuForRole(app, name);
@@ -335,7 +384,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         UserInfo ui = UserContext.get();
         if (!StringUtils.equals("ADMIN", ui.getRoleName())
                 && !StringUtils.equals(ui.getRoleName(), roleMenuEntity.getRole().getName())) {
-            throw new UnsupportedOperationException("不允许配置别的角色菜单");
+            throw new UnsupportedOperationException(messageSource.getMessage("service.login.menu.notConfig", null, Locale.getDefault()));
         }
         loginDao.deleteMenuEntities(app, roleMenuEntity.getRole().getName());
         context.getBean(JdbcTemplate.class).batchUpdate("insert into h_role_menus(app,role_name,menu_name) values(?,?,?)", new BatchPreparedStatementSetter() {
@@ -365,7 +414,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
             log.info("密码验证一致");
             resetSessionUserInfo(request, user);
         } else {
-            throw new IllegalArgumentException("密码错误，请重试");
+            throw new IllegalArgumentException(messageSource.getMessage("service.login.pwd.wrong", null, Locale.getDefault()));
         }
     }
 
@@ -475,7 +524,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean {
         if (session != null) {
             return (UserInfo) session.getAttribute("h-sm-user");
         } else {
-            throw new RuntimeException("会话失效，请重新登录");
+            throw new RuntimeException(messageSource.getMessage("service.login.session.invalid", null, Locale.getDefault()));
         }
     }
 }

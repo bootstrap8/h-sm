@@ -1,9 +1,18 @@
 <script lang="ts" setup>
-import {ref, reactive, onMounted} from 'vue';
+import {ref, reactive, onMounted, onUnmounted} from 'vue';
 import axios from '@/network';
 import {msg, deobfuscate, encryptAES} from '@/utils/Utils';
 import CryptoJS from "crypto-js";
 import router from "@/router";
+import {queryLang, switchLang, queryLangData, langKey2Desc} from "@/i18n/common";
+
+const lang = ref(langKey2Desc(window.sessionStorage.getItem('h-sm-lang') || 'zh-CN'))
+const langData = reactive({
+  axiosRequestErr:'',axiosRequestCallKey:'',formValidateNotNull:'',loginAnswerErr:'',loginTitle:'',loginSpan:'',
+  loginFormPlaceholderUserName:'', loginFormPlaceholderPassword:'',loginFormBtnLogin:'',loginFormBtnSpan:'',
+  loginModalTitle:'',loginModalP:'',loginModalPlaceholderCode:'',loginModalBtnConfirm:'',loginModalBtnCancel:'',
+  loginAnswerCalc: ''
+})
 
 const obfs = "969";
 const key = CryptoJS.enc.Utf8.parse(deobfuscate("΍ΊϻΌΌϱϰϺϸΌϽϺϽΈϽϽ", obfs));
@@ -14,8 +23,16 @@ const data = reactive({
 });
 
 onMounted(() => {
-  console.log('页面加载后');
+  document.addEventListener('keydown', enterEvent);
+  queryLang('zh-CN', lang)
+  queryLangData(langData,['axiosRequestErr','axiosRequestCallKey','formValidateNotNull','loginAnswerErr','loginTitle','loginSpan'
+    ,'loginFormPlaceholderUserName','loginFormPlaceholderPassword','loginFormBtnLogin','loginFormBtnSpan','loginModalTitle','loginModalP'
+    ,'loginModalPlaceholderCode','loginModalBtnConfirm','loginModalBtnCancel','loginAnswerCalc'])
 });
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', enterEvent);
+})
 
 const username = ref('');
 const password = ref('');
@@ -28,10 +45,23 @@ function generateQuestion() {
   const num1 = Math.floor(Math.random() * 10);
   const num2 = Math.floor(Math.random() * 10);
   correctAnswer.value = num1 + num2;
-  question.value = `请计算: ${num1} + ${num2} = ?`;
+  question.value = `${langData.loginAnswerCalc}: ${num1} + ${num2} = ?`;
+  window.setTimeout(function () {
+    document.getElementById('answer_field')?.focus()
+  }, 500)
 }
 
 function validateLogin() {
+  let user = document.getElementById('email_field')?.value;
+  if (!user || user.trim() == '') {
+    document.getElementById('email_field')?.focus()
+    return false
+  }
+  let pwd = document.getElementById('password_field')?.value;
+  if (!pwd || pwd.trim() == '') {
+    document.getElementById('password_field')?.focus()
+    return false
+  }
   showModal.value = true;
   generateQuestion();
   return false;
@@ -59,20 +89,57 @@ function confirmAnswer() {
         msg(res.data.errorMessage, 'warning');
       }
     }).catch((err: Error) => {
-      msg('请求异常', 'error');
+      msg(langData.axiosRequestErr, 'error');
     });
   } else {
-    alert("答案错误，请重试！");
+    msg(langData.loginAnswerErr, 'warning')
   }
 }
 
 function cancel() {
   showModal.value = false;
 }
+
+function enterEvent(event) {
+  if ('Enter' == event.key) {
+    if (showModal.value) {
+      confirmAnswer()
+    } else {
+      validateLogin()
+    }
+  }
+}
+
+// const queryLang = () => {
+//   axios({
+//     url: '/i18n/lang',
+//     method: 'get'
+//   }).then((res: any) => {
+//     if (res.data.state == 'OK') {
+//       let langKey = res.data.body
+//       console.log('从后端查询到语言: ', langKey)
+//       lang.value = langKey2Desc(langKey)
+//       sessionStorage.setItem('h-sm-lang', langKey)
+//       if (langKey != 'zh-CN') {
+//         router.push({path: '/'})
+//       }
+//     } else {
+//       let content = res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
+//       msg(content, "warning")
+//     }
+//   }).catch((err: Error) => {
+//     console.log('', err)
+//   })
+// }
 </script>
 
 <template>
   <div class="container">
+    <el-radio-group v-model="lang" size="small" style="position: absolute; top: 2px; right: 2px" @change="switchLang">
+      <el-radio-button label="中文" value="中文"/>
+      <el-radio-button label="English" value="English"/>
+      <el-radio-button label="日本語" value="日本語"/>
+    </el-radio-group>
     <!-- 左侧背景 -->
     <div class="left-panel"></div>
 
@@ -80,8 +147,8 @@ function cancel() {
     <div class="right-panel">
       <div class="form_container">
         <div class="title_container">
-          <p class="title">登录你的账号</p>
-          <span class="subtitle">开始使用我们的应用维护平台，只需创建一个帐户并享受体验。</span>
+          <p class="title">{{langData.loginTitle}}</p>
+          <span class="subtitle">{{langData.loginSpan}}</span>
         </div>
         <br>
         <div class="input_container">
@@ -91,7 +158,7 @@ function cancel() {
             <path stroke-linejoin="round" stroke-width="1.5" stroke="#141B34"
                   d="M20 19C20 16.7909 18.2091 15 16 15H8C5.79086 15 4 16.7909 4 19V20H20V19Z"></path>
           </svg>
-          <input placeholder="请输入账号" title="Input title" name="input-name" type="text" class="input_field"
+          <input :placeholder="langData.loginFormPlaceholderUserName" title="Input title" name="input-name" type="text" class="input_field"
                  id="email_field" v-model="username">
         </div>
         <div class="input_container">
@@ -103,11 +170,11 @@ function cancel() {
             <path fill="#141B34"
                   d="M21.2046 15.1045L20.6242 15.6956V15.6956L21.2046 15.1045ZM21.4196 16.4767C21.7461 16.7972 22.2706 16.7924 22.5911 16.466C22.9116 16.1395 22.9068 15.615 22.5804 15.2945L21.4196 16.4767ZM18.0228 15.1045L17.4424 14.5134V14.5134L18.0228 15.1045ZM18.2379 18.0387C18.5643 18.3593 19.0888 18.3545 19.4094 18.028C19.7299 17.7016 19.7251 17.1771 19.3987 16.8565L18.2379 18.0387ZM14.2603 20.7619C13.7039 21.3082 12.7957 21.3082 12.2394 20.7619L11.0786 21.9441C12.2794 23.1232 14.2202 23.1232 15.4211 21.9441L14.2603 20.7619ZM12.2394 20.7619C11.6914 20.2239 11.6914 19.358 12.2394 18.82L11.0786 17.6378C9.86927 18.8252 9.86927 20.7567 11.0786 21.9441L12.2394 20.7619ZM12.2394 18.82C12.7957 18.2737 13.7039 18.2737 14.2603 18.82L15.4211 17.6378C14.2202 16.4587 12.2794 16.4587 11.0786 17.6378L12.2394 18.82ZM14.2603 18.82C14.8082 19.358 14.8082 20.2239 14.2603 20.7619L15.4211 21.9441C16.6304 20.7567 16.6304 18.8252 15.4211 17.6378L14.2603 18.82ZM20.6242 15.6956L21.4196 16.4767L22.5804 15.2945L21.785 14.5134L20.6242 15.6956ZM15.4211 18.82L17.8078 16.4767L16.647 15.2944L14.2603 17.6377L15.4211 18.82ZM17.8078 16.4767L18.6032 15.6956L17.4424 14.5134L16.647 15.2945L17.8078 16.4767ZM16.647 16.4767L18.2379 18.0387L19.3987 16.8565L17.8078 15.2945L16.647 16.4767ZM21.785 14.5134C21.4266 14.1616 21.0998 13.8383 20.7993 13.6131C20.4791 13.3732 20.096 13.1716 19.6137 13.1716V14.8284C19.6145 14.8284 19.619 14.8273 19.6395 14.8357C19.6663 14.8466 19.7183 14.8735 19.806 14.9391C19.9969 15.0822 20.2326 15.3112 20.6242 15.6956L21.785 14.5134ZM18.6032 15.6956C18.9948 15.3112 19.2305 15.0822 19.4215 14.9391C19.5091 14.8735 19.5611 14.8466 19.5879 14.8357C19.6084 14.8273 19.6129 14.8284 19.6137 14.8284V13.1716C19.1314 13.1716 18.7483 13.3732 18.4281 13.6131C18.1276 13.8383 17.8008 14.1616 17.4424 14.5134L18.6032 15.6956Z"></path>
           </svg>
-          <input placeholder="请输入密码" title="Input title" name="input-name" type="password" class="input_field"
+          <input :placeholder="langData.loginFormPlaceholderPassword" title="Input title" name="input-name" type="password" class="input_field"
                  id="password_field" v-model="password">
         </div>
-        <button title="登录" type="button" class="sign-in_btn" @click="validateLogin">
-          <span>登   录</span>
+        <button :title="langData.loginFormBtnLogin" type="button" class="sign-in_btn" @click="validateLogin">
+          <span>{{ langData.loginFormBtnSpan }}</span>
         </button>
       </div>
     </div>
@@ -116,13 +183,13 @@ function cancel() {
   <!-- 自定义模态框 -->
   <div v-if="showModal" class="modal">
     <div class="modal-content">
-      <h3>安全保护</h3>
-      <p>检测到本次操作需输入验证码</p>
+      <h3>{{langData.loginModalTitle}}</h3>
+      <p>{{langData.loginModalP}}</p>
       <span @click="generateQuestion">{{ question }}</span>
-      <input type="number" v-model="userAnswer" placeholder="请输入验证码">
+      <input id="answer_field" type="number" v-model="userAnswer" :placeholder="langData.loginModalPlaceholderCode">
       <div class="modal-buttons">
-        <button @click="confirmAnswer">确定</button>
-        <button @click="cancel">取消</button>
+        <button @click="confirmAnswer">{{langData.loginModalBtnConfirm}}</button>
+        <button @click="cancel">{{langData.loginModalBtnCancel}}</button>
       </div>
     </div>
   </div>
@@ -153,8 +220,8 @@ function cancel() {
 
 /* 登录框样式 */
 .form_container {
-  width: fit-content;
-  height: fit-content;
+  width: 350px;
+  height: 350px;
   display: flex;
   flex-direction: column;
   align-items: center;

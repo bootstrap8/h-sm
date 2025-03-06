@@ -13,7 +13,7 @@ public class UserContext {
 
     public static UserInfo get() {
         UserInfo ui = tl.get();
-        Assert.notNull(ui, "会话失效 或 使用了@SMRequiresPermissions且没把接口配置到SessionInterceptor拦截器中，请检查");
+        Assert.notNull(ui, "The session has failed or @ SMRequires Permissions has been used without configuring the interface to the SessionInterceptor interceptor. Please check");
         return ui;
     }
 

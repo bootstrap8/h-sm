@@ -1,13 +1,17 @@
 import {createRouter, createWebHashHistory} from 'vue-router'
 
+const langSet = (language:string) => {
+    let lang = window.sessionStorage.getItem("h-sm-lang") || language
+    window.sessionStorage.setItem('h-sm-lang', lang)
+}
+
 const routes = [
     {
         path: '',
-        component: () => import('@/views/login/login.vue')
-    },
-    {
-        path: '/login',
-        component: () => import('@/views/login/login.vue')
+        component: () => {
+            langSet('zh-CN')
+            return import('@/views/login/login.vue')
+        }
     },
     {
         path: '/main_top',

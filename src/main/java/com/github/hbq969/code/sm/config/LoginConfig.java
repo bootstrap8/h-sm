@@ -1,5 +1,7 @@
 package com.github.hbq969.code.sm.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.hbq969.code.sm.login.model.SMInfo;
 import com.google.common.collect.Lists;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -48,4 +50,12 @@ public class LoginConfig {
      * 初始化脚本文件编码格式
      */
     private String initScriptFileCharset = "UTF-8";
+
+    /**
+     * 默认语言
+     */
+    private String language = "zh-CN";
+
+    @JsonIgnore
+    private SMInfo smInfo;
 }

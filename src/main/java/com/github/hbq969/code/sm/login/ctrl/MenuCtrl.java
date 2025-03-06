@@ -17,10 +17,12 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 @RequestMapping(path = "/hbq969-sm/menus")
@@ -36,6 +38,9 @@ public class MenuCtrl implements ICommonControl {
 
     @Autowired
     private CacheService cacheService;
+
+    @Autowired
+    private ResourceBundleMessageSource messageSource;
 
     @ApiOperation("查询菜单信息")
     @RequestMapping(path = "/list", method = RequestMethod.POST)
@@ -89,7 +94,7 @@ public class MenuCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Menu", apiKey = "saveMenu", apiDesc = "新增菜单")
     public ReturnMessage<?> saveMenu(@RequestBody MenuEntity menu) {
         loginService.saveMenuEntity(menu);
-        return ReturnMessage.success("保存成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.save.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("修改菜单")
@@ -99,7 +104,7 @@ public class MenuCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Menu", apiKey = "updateMenu", apiDesc = "修改菜单")
     public ReturnMessage<?> updateMenu(@RequestBody MenuEntity menu) {
         loginService.updateMenuEntity(menu);
-        return ReturnMessage.success("修改成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.update.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("删除菜单")
@@ -109,7 +114,7 @@ public class MenuCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Menu", apiKey = "deleteMenu", apiDesc = "删除菜单")
     public ReturnMessage<?> deleteMenu(@RequestParam(name = "name") String name) {
         loginService.deleteMenuEntity(name);
-        return ReturnMessage.success("删除成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.delete.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("查询声明了权限的菜单名称列表")

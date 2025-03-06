@@ -2,6 +2,7 @@ package com.github.hbq969.code.sm.login.service;
 
 import com.github.hbq969.code.common.lang.Init;
 import com.github.hbq969.code.sm.login.dao.entity.*;
+import com.github.hbq969.code.sm.login.event.SMInfoEvent;
 import com.github.hbq969.code.sm.login.model.ResetPassword;
 import com.github.hbq969.code.sm.login.model.UserInfo;
 import com.github.hbq969.code.sm.login.model.LoginInfo;
@@ -61,4 +62,6 @@ public interface LoginService extends Init {
     UserInfo getUserInfo(HttpServletRequest request);
 
     HttpSession getSession(String sid);
+
+    void loadSMInfo(SMInfoEvent event);
 }

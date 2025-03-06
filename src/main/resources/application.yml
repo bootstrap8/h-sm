@@ -34,14 +34,14 @@ spring:
       mdc:
         enabled: true
       api-safe:
-        enabled: true
+        enabled: false
         include-path-patterns:
           - /hbq969-dict/**
           - /hbq969-tabula/**
         header-name: api-safe-token
         header-value-regex: 8DC75E91D4E143CF94BA29C46C43B24B
       login:
-        enabled: false
+        enabled: true
         cookie-max-age-sec: 1800
         dialect: embedded
         include-urls:
@@ -62,6 +62,8 @@ spring:
           - "/hbq969-sm/**/*.map"
           - "/hbq969-sm/**/*.ico"
           - "/hbq969-sm/**/login"
+          - "/hbq969-sm/i18n/lang"
+          - "/hbq969-sm/i18n/lang/data"
       resource-handler-registry:
         entries:
           - handlers: /hbq969-common/**

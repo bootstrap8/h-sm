@@ -19,9 +19,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,6 +41,9 @@ public class RoleCtrl implements ICommonControl {
     @Autowired
     private LoginService loginService;
 
+    @Autowired
+    private ResourceBundleMessageSource messageSource;
+
     @ApiOperation("分页查询角色列表")
     @RequestMapping(path = "/list", method = RequestMethod.POST)
     @ResponseBody
@@ -54,7 +59,7 @@ public class RoleCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Role",apiKey = "saveRole",apiDesc = "新增角色")
     public ReturnMessage<String> saveRole(@RequestBody RoleEntity role) {
         loginService.saveRoleEntity(role);
-        return ReturnMessage.success("保存成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.save.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("修改角色")
@@ -64,7 +69,7 @@ public class RoleCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Role",apiKey = "updateRole",apiDesc = "修改角色")
     public ReturnMessage<?> updateRole(@RequestBody RoleEntity role) {
         loginService.updateRoleEntity(role);
-        return ReturnMessage.success("修改成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.update.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("删除角色")
@@ -74,7 +79,7 @@ public class RoleCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Role",apiKey = "deleteRole",apiDesc = "删除角色")
     public ReturnMessage<?> deleteRole(@RequestParam(name = "name") String name) {
         loginService.deleteRoleEntity(name);
-        return ReturnMessage.success("删除成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.delete.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("保存角色关联菜单")
@@ -84,7 +89,7 @@ public class RoleCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Role",apiKey = "saveRoleMenus",apiDesc = "保存角色关联菜单")
     public ReturnMessage<?> saveRoleMenus(@RequestBody RoleMenuEntity rme) {
         loginService.updateRoleMenus(rme);
-        return ReturnMessage.success("保存成功");
+        return ReturnMessage.success(messageSource.getMessage("ctrl.save.result", null, Locale.getDefault()));
     }
 
     @ApiOperation("查询角色菜单配置")

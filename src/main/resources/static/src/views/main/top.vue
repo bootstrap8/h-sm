@@ -16,7 +16,7 @@
             <el-icon size="20">
               <component :is="getIconComponent('HomeIcon')"/>
             </el-icon>
-            <template #title>H-SM</template>
+            <template #title>{{ data.smInfo.title }}</template>
           </el-menu-item>
           <template v-for="menu in data.adminMenus" v-if="data.user.roleName=='ADMIN'">
             <el-sub-menu v-if="menu.menus && menu.menus.length > 0" :index="menu.url">
@@ -75,11 +75,11 @@
               style="--el-switch-on-color: #79BBFF; --el-switch-off-color: #95D475;margin-right: 5px"
               active-value="main_left"
               inactive-value="main_top"
-              active-text="上下布局"
-              inactive-text="左右布局"
+              :active-text="langData.mainLayoutUd"
+              :inactive-text="langData.mainLayoutLr"
               @change="router.push({path:`/${layout}`})"
           />
-<!--          <TimeComponent/>-->
+          <!--          <TimeComponent/>-->
           <span style="margin-right: 10px;margin-left:0px; padding:0;font-size: 0.6em;">
             {{ data.user.userName }}
           </span>
@@ -136,18 +136,21 @@ import {
 import router from '@/router'
 import axios from '@/network'
 import {msg} from '@/utils/Utils'
-import TimeComponent from '@/components/TimeComponent.vue';
+import {getLangData} from "@/i18n/locale";
 
-const layout=ref('main_top')
+const langData = getLangData()
+
+const layout = ref('main_top')
 
 const data = reactive({
-  currentPage: '主页',
+  currentPage: langData.mainMainPage,
   user: {},
+  smInfo: {},
   adminMenus: [],
   menus: [],
-  menuEntry: {}
+  menuEntry: {},
 })
-provide('session',data)
+provide('session', data)
 const menuMap = reactive({})
 const logout = () => {
   axios({
@@ -155,7 +158,7 @@ const logout = () => {
     method: 'post'
   }).then((res: any) => {
     if (res.data.state == 'OK') {
-      router.push({path: '/login'})
+      router.push({path: '/'})
     } else {
       msg(res.data.errorMessage, 'warning')
     }
@@ -164,6 +167,10 @@ const logout = () => {
   })
 }
 onMounted(() => {
+  queryUserinfo()
+})
+
+const queryUserinfo = () => {
   axios({
     url: '/system/user',
     method: 'get'
@@ -171,16 +178,17 @@ onMounted(() => {
     if (res.data.state == 'OK') {
 
       let user = res.data.body.user
+      data.smInfo = res.data.body.smInfo
       data.user.userName = user.userName
       data.user.roleName = user.roleName
       data.menus = user.menus
-      if(data.menus && data.menus.length>0){
-        data.menus.forEach(m=>{
-          data.menuEntry[m.name]=m.menuDesc
+      if (data.menus && data.menus.length > 0) {
+        data.menus.forEach(m => {
+          data.menuEntry[m.name] = m.menuDesc
           menuMap[m.url] = m.menuDesc
-          if(m.menus && m.menus.length>0){
-            m.menus.forEach(sm=>{
-              data.menuEntry[sm.name]=sm.menuDesc
+          if (m.menus && m.menus.length > 0) {
+            m.menus.forEach(sm => {
+              data.menuEntry[sm.name] = sm.menuDesc
               menuMap[sm.url] = sm.menuDesc
             })
           }
@@ -197,14 +205,14 @@ onMounted(() => {
           }
         })
       }
-    }else {
-      let content = '调用 '+res.config.baseURL+res.config.url+': '+res.data.errorMessage;
+    } else {
+      let content = '调用 ' + res.config.baseURL + res.config.url + ': ' + res.data.errorMessage;
       msg(content, "warning")
     }
   }).catch((err: Error) => {
     msg('请求异常', 'error')
   })
-})
+}
 
 const getIconComponent = (iconName: string) => {
   return resolveComponent(iconName);
@@ -247,7 +255,7 @@ const handleMenuSelect = async (index: string) => {
   } else {
     activeMenu.value = index;
     let menuName = menuMap[index];
-    data.currentPage = menuName;
+    langData.mainMainPage = menuName;
 
     // 检查是否已经存在该 Tab
     const tab = tabs.value.find((tab) => tab.name === index);
@@ -489,8 +497,8 @@ const _ = (window as any).ResizeObserver;
 :deep(.el-tabs__item) {
   background-color: #fafafa; /* 未选中背景色 */
   position: relative; /* 为伪元素定位 */
-  -webkit-transition: all .3s cubic-bezier(.645,.045,.355,1);
-  transition: all .3s cubic-bezier(.645,.045,.355,1);
+  -webkit-transition: all .3s cubic-bezier(.645, .045, .355, 1);
+  transition: all .3s cubic-bezier(.645, .045, .355, 1);
 }
 
 :deep(.el-tabs__item::after) {

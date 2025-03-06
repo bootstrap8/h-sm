@@ -53,7 +53,8 @@ export default (config: any) => {
     loadingInstance.close()
     if (error.response.status == 401) {
       msg('会话已失效，请重新登录', 'warning')
-      router.push({path: '/login'})
+      window.sessionStorage.removeItem('h-sm-lang')
+      router.push({path: '/'})
       return Promise.resolve({data: {state: 'ERROR', body: '会话已失效，请重新登录'}});
     }else if(error.response.status >= 500){
       router.push({path: '/500'})
