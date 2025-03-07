@@ -143,7 +143,9 @@ public class PermServiceImpl implements PermService, InitializingBean {
                     entity.setApiDesc(mthPerms.apiDesc());
                 }
                 entities.add(entity);
-                log.info("解析到权限信息: {}", GsonUtils.toJson(entity));
+                if (log.isTraceEnabled()) {
+                    log.trace("解析到权限信息: {}", GsonUtils.toJson(entity));
+                }
             }
         }
         return entities;

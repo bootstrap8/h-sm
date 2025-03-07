@@ -13,7 +13,7 @@ public class UserContext {
 
     public static UserInfo get() {
         UserInfo ui = tl.get();
-        Assert.notNull(ui, "The session has failed or @ SMRequires Permissions has been used without configuring the interface to the SessionInterceptor interceptor. Please check");
+        Assert.notNull(ui, "The session has failed or @SMRequires Permissions has been used without configuring the interface to the SessionInterceptor interceptor. Please check");
         return ui;
     }
 

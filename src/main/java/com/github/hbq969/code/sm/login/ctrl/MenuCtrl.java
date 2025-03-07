@@ -3,6 +3,8 @@ package com.github.hbq969.code.sm.login.ctrl;
 import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
+import com.github.hbq969.code.common.spring.context.SpringContext;
+import com.github.hbq969.code.common.utils.I18nUtils;
 import com.github.hbq969.code.dict.service.api.impl.MapDictHelperImpl;
 import com.github.hbq969.code.sm.login.dao.entity.MenuEntity;
 import com.github.hbq969.code.sm.login.model.MenuModel;
@@ -14,15 +16,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 
 @RequestMapping(path = "/hbq969-sm/menus")
@@ -40,7 +38,7 @@ public class MenuCtrl implements ICommonControl {
     private CacheService cacheService;
 
     @Autowired
-    private ResourceBundleMessageSource messageSource;
+    private SpringContext context;
 
     @ApiOperation("查询菜单信息")
     @RequestMapping(path = "/list", method = RequestMethod.POST)
@@ -94,7 +92,7 @@ public class MenuCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Menu", apiKey = "saveMenu", apiDesc = "新增菜单")
     public ReturnMessage<?> saveMenu(@RequestBody MenuEntity menu) {
         loginService.saveMenuEntity(menu);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.save.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.save.result"));
     }
 
     @ApiOperation("修改菜单")
@@ -104,7 +102,7 @@ public class MenuCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Menu", apiKey = "updateMenu", apiDesc = "修改菜单")
     public ReturnMessage<?> updateMenu(@RequestBody MenuEntity menu) {
         loginService.updateMenuEntity(menu);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.update.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.update.result"));
     }
 
     @ApiOperation("删除菜单")
@@ -114,7 +112,7 @@ public class MenuCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "Menu", apiKey = "deleteMenu", apiDesc = "删除菜单")
     public ReturnMessage<?> deleteMenu(@RequestParam(name = "name") String name) {
         loginService.deleteMenuEntity(name);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.delete.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.delete.result"));
     }
 
     @ApiOperation("查询声明了权限的菜单名称列表")

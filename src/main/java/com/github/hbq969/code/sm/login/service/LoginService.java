@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public interface LoginService extends Init {
+public interface LoginService{
 
     PageInfo<RoleEntity> queryRoleList(int pageNum, int pageSize, RoleEntity q);
 
@@ -57,11 +57,13 @@ public interface LoginService extends Init {
 
     void login(LoginInfo login, HttpServletRequest request, HttpServletResponse response);
 
+    void refreshSessionInfo(HttpServletRequest request,UserEntity user);
+
     void logout(HttpServletRequest request, HttpServletResponse response);
 
     UserInfo getUserInfo(HttpServletRequest request);
 
     HttpSession getSession(String sid);
 
-    void loadSMInfo(SMInfoEvent event);
+    void loadSMInfo();
 }

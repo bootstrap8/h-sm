@@ -72,14 +72,14 @@
               v-model="layout"
               class="ml-2"
               inline-prompt
-              style="--el-switch-on-color: #79BBFF; --el-switch-off-color: #95D475;margin-right: 5px"
+              style="--el-switch-on-color: #79BBFF; --el-switch-off-color: #95D475;margin-right: 10px"
               active-value="main_left"
               inactive-value="main_top"
-              :active-text="langData.mainLayoutUd"
-              :inactive-text="langData.mainLayoutLr"
+              :active-text="langData.mainLayoutLr"
+              :inactive-text="langData.mainLayoutUd"
               @change="router.push({path:`/${layout}`})"
           />
-          <!--          <TimeComponent/>-->
+          <LocaleRadioGroup :radio-name="localeRadio" style="margin-right: 10px" @locale-change="switchLang"/>
           <span style="margin-right: 10px;margin-left:0px; padding:0;font-size: 0.6em;">
             {{ data.user.userName }}
           </span>
@@ -118,8 +118,7 @@
 </template>
 
 <script lang="ts" setup>
-import type Node from 'element-plus/es/components/tree/src/model/node'
-import {HomeFilled, SwitchButton, Menu, Setting, User, UserFilled} from '@element-plus/icons-vue'
+import {SwitchButton} from '@element-plus/icons-vue'
 import {
   defineAsyncComponent,
   markRaw,
@@ -129,14 +128,14 @@ import {
   resolveComponent,
   defineComponent,
   h,
-  nextTick,
   provide,
-  inject
 } from 'vue';
 import router from '@/router'
 import axios from '@/network'
 import {msg} from '@/utils/Utils'
 import {getLangData} from "@/i18n/locale";
+import {switchLang} from "@/i18n/common";
+import LocaleRadioGroup from "@/components/LocaleRadioGroup.vue";
 
 const langData = getLangData()
 

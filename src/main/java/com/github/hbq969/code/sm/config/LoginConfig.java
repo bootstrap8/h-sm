@@ -42,20 +42,32 @@ public class LoginConfig {
     private String sessionKey = "JSESSIONID";
 
     /**
-     * 初始化脚本文件，如果是oracle gbk格式的请选择 sm-initial-gbk.sql
+     * h-sm初始化脚本配置
      */
-    private String initScriptFile = "sm-initial.sql";
+    private ServiceInitialScript smInitialScript = new ServiceInitialScript();
 
     /**
-     * 初始化脚本文件编码格式
+     * 服务初始化脚本配置
      */
-    private String initScriptFileCharset = "UTF-8";
-
-    /**
-     * 默认语言
-     */
-    private String language = "zh-CN";
+    private ServiceInitialScript serviceInitialScript = new ServiceInitialScript();
 
     @JsonIgnore
     private SMInfo smInfo;
+
+    @Data
+    public static class ServiceInitialScript {
+        /**
+         * 脚本文件前缀
+         */
+        private String prefix = "initial";
+        /**
+         * 默认语言
+         */
+        private String language = "zh-CN";
+
+        /**
+         * 文件编码
+         */
+        private String charset = "utf-8";
+    }
 }

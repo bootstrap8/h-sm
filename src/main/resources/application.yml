@@ -27,7 +27,7 @@ spring:
   main:
     allow-bean-definition-overriding: true
   messages:
-    basename: i18n/message
+    basename: i18n/messages
     encoding: UTF-8
   mvc:
     interceptors:
@@ -64,6 +64,11 @@ spring:
           - "/hbq969-sm/**/login"
           - "/hbq969-sm/i18n/lang"
           - "/hbq969-sm/i18n/lang/data"
+        sm-initial-script:
+          prefix: sm-initial
+          language: zh-CN
+          charset: utf-8
+
       resource-handler-registry:
         entries:
           - handlers: /hbq969-common/**
@@ -91,47 +96,6 @@ spring:
       minimum-idle: 5
       max-lifetime: 1800000
       connection-test-query: SELECT 1
-
-  kafka:
-    producer:
-      bootstrap-servers: docker.for.mac.host.internal:9092
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-      acks: 1
-      buffer-memory: 134217728
-      batch-size: 65536
-      properties:
-        heartbeat.interval.ms: 3000
-        max.block.ms: 10000
-        #        sasl.mechanism: PLAIN
-        #        security.protocol: SASL_PLAINTEXT
-        #        sasl.jaas.config: ENC(wfUFL/Omh6mpEt2J/tJteC5jONhfnZD+9hR+4Mc7bnJnKwh6yhC8xMRv6yQl0dJTy5FhGlM7B8ubmI5VLFw6haz9wMBUcKwNkp4X+ktPNNj8OZaGkHvSITTeXS4KhMuNnUE9842xrRtCsqTbUPf+EhxnrrGof9Hnx7BjvgRgdq9CoQGm/dZsKPhY5nKjhU8B)
-        retry.backoff.ms: 500
-        linger.ms: 1000
-        max.in.flight.requests.per.connection: 1
-      retries: 120
-    consumer:
-      enabled: true
-      bootstrap-servers: docker.for.mac.host.internal:9092
-      enable-auto-commit: true
-      auto-commit-interval: 10s
-      max-poll-records: 500
-      auto-offset-reset: latest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      group-id: ${spring.application.name}
-      fetch-min-size: 10485760
-      fetch-max-wait: 2s
-      properties:
-        heartbeat.interval.ms: 3000
-        max.block.ms: 10000
-    #        sasl.mechanism: PLAIN
-    #        security.protocol: SASL_PLAINTEXT
-    #        sasl.jaas.config: ENC(wfUFL/Omh6mpEt2J/tJteC5jONhfnZD+9hR+4Mc7bnJnKwh6yhC8xMRv6yQl0dJTy5FhGlM7B8ubmI5VLFw6haz9wMBUcKwNkp4X+ktPNNj8OZaGkHvSITTeXS4KhMuNnUE9842xrRtCsqTbUPf+EhxnrrGof9Hnx7BjvgRgdq9CoQGm/dZsKPhY5nKjhU8B)
-    listener:
-      type: batch
-      concurrency: 1
-      poll-timeout: 10s
 
 knife4j:
   enable: true
@@ -163,8 +127,9 @@ encrypt:
   restful:
     enabled: true
     aes:
-      key: DC2EE8931E434A44
       show-log: true
+      key: ENC(PhsjjLFsZX5eNgvGh72ZGbf4boGXwdrpzb+od/vfPQ13lBgjil9MU/rdrigeweDcHFpYCEZPe241Xn81rWpHsg==)
+      iv: ENC(Avu8L7a3mG/3dD8zSrQLEcSguU51vOS0KGluDsRakOttDyZJBRpC0l313nXRmFQ65lVMO5nJDKzho25mKRz8zg==)
 
 advice:
   log:

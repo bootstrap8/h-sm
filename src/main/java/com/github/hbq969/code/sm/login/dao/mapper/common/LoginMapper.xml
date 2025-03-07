@@ -253,4 +253,10 @@
             and a.username=#{name}
         </where>
     </select>
+
+    <select id="querySMInfo" resultType="java.util.Map">
+        select info_content AS "info_content"
+        from h_sm_info
+        where app = #{app}
+    </select>
 </mapper>

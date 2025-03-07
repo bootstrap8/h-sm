@@ -2,17 +2,14 @@ delete from h_roles where app='h-sm' and name in ('ADMIN','MANAGE','USER');
 delete from h_menus where app='h-sm' and name in ('system','Role','User','Menu','AI','SiliconFlow');
 delete from h_dict_base where dict_name='menu,icon' and app='common';
 delete from h_dict_pairs where dict_name='menu,icon' and app='common';
-delete from h_sm_info where app='h-sm';
 
-insert into h_sm_info(app,info_content) values('h-sm','{"title":"SM テンプレート"}');
-
-insert into h_roles(app,name,description,created_at) values('h-sm','ADMIN','スーパー管理者',1735800456);
-insert into h_roles(app,name,description,created_at) values('h-sm','MANAGE','メンテナンス管理者',1735800456);
-insert into h_roles(app,name,description,created_at) values('h-sm','USER','通常ユーザー',1735800456);
-insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','system','システム管理','/system','-',100,1,'SettingsIcon',1735800456);
-insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','Role','役割管理','/system/Role','system',0,2,'RoleIcon',1735800456);
-insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','User','ユーザー管理','/system/User','system',1,2,'UserIcon',1735800456);
-insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','Menu','メニュー管理','/system/Menu','system',2,2,'MenuIcon',1735800456);
+insert into h_roles(app,name,description,created_at) values('h-sm','ADMIN','Administrator',1735800456);
+insert into h_roles(app,name,description,created_at) values('h-sm','MANAGE','Maintenance',1735800456);
+insert into h_roles(app,name,description,created_at) values('h-sm','USER','Normal User',1735800456);
+insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','system','System Manage','/system','-',100,1,'SettingsIcon',1735800456);
+insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','Role','Role','/system/Role','system',0,2,'RoleIcon',1735800456);
+insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','User','User','/system/User','system',1,2,'UserIcon',1735800456);
+insert into h_menus(app,name,menu_desc,url,parent_key,order_index,menu_level,icon_name,created_at) values('h-sm','Menu','Menu','/system/Menu','system',2,2,'MenuIcon',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','admin','$2a$10$2n7McJFmaxR78hcEU0TELuGGLwpZtqiJDKIolf7SnSETwBye8AYpW','ADMIN',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','manage','$2a$10$oHdG4ticIvzG.8BlBjI9HuC3c9RFSD3u.vr8aphNXC4.SckKfIyLq','MANAGE',1735800456);
 insert into h_users(app,username,password,role_name,created_at) values('h-sm','user','$2a$10$qRoxm0i0yb1E0MVId.NjL.A/Ac3W4puydYhLeufA5zQ8KJmiAKBIO','USER',1735800456);
@@ -21,7 +18,12 @@ insert into h_role_menus(app,role_name,menu_name) values('h-sm','MANAGE','Role')
 insert into h_role_menus(app,role_name,menu_name) values('h-sm','MANAGE','User');
 insert into h_role_menus(app,role_name,menu_name) values('h-sm','MANAGE','Menu');
 
-insert into h_dict_base(dict_name,dict_desc,dict_source,key_column,val_column,app) values('menu,icon','メニューアイコン',1,'key','value','common');
+insert into h_dict_base(dict_name,dict_desc,dict_source,key_column,val_column,app) values('i18n,language1','Language abbreviation mapping',1,'key','value','common');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('i18n,language1','zh','zh-CN');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('i18n,language1','en','en-US');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('i18n,language1','ja','ja-JP');
+
+insert into h_dict_base(dict_name,dict_desc,dict_source,key_column,val_column,app) values('menu,icon','Menu',1,'key','value','common');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','DashboardIcon','Dashboard');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','FolderIcon','Folder');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','LogIcon','File');
@@ -138,24 +140,24 @@ insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','serv
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service4','service4');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','service5','service5');
 
-delete from h_dict_base where dict_name='lang,ja-JP';
-delete from h_dict_pairs where dict_name='lang,ja-JP';
+delete from h_dict_base where dict_name='lang,en-US';
+delete from h_dict_pairs where dict_name='lang,en-US';
 
-insert into h_dict_base(dict_name,dict_desc,dict_source,key_column,val_column,app) values('lang,ja-JP','语言,日语',1,'key','value','common');
+insert into h_dict_base(dict_name,dict_desc,dict_source,key_column,val_column,app) values('lang,en-US','语言,英文',1,'key','value','common');
 
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','axiosRequestErr','例外を要求する');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','axiosRequestCallKey','電話');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','formValidateNotNull','空にすることはできません');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginAnswerCalc','計算してください');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginAnswerErr','間違った回答です。再度入力してください');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginTitle','アカウントにログイン');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginSpan','当社のアプリ メンテナンス プラットフォームの使用を開始するには、アカウントを作成して、ぜひご利用ください。');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginFormPlaceholderUserName','口座番号を入力してください');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginFormPlaceholderPassword','パスワードを入力してください');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginFormBtnLogin','ログイン');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginFormBtnSpan','ログイン');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginModalTitle','セキュリティ保護');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginModalP','この操作には検証コードが必要であることが検出されました');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginModalPlaceholderCode','認証コードを入力してください');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginModalBtnConfirm','もちろん');
-insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,ja-JP','loginModalBtnCancel','キャンセル');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','axiosRequestErr','Request Err');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','axiosRequestCallKey','Call');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','formValidateNotNull','Not Null');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginAnswerCalc','Please calculate');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginAnswerErr','Wrong answer, please re-enter');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginTitle','Login to your account');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginSpan','Start using our application maintenance platform, just create an account and enjoy the experience.');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginFormPlaceholderUserName','Please enter your account');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginFormPlaceholderPassword','Please enter your password');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginFormBtnLogin','Login');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginFormBtnSpan','Login');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginModalTitle','Security protection');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginModalP','A verification code is required for this operation');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginModalPlaceholderCode','Please enter the verification code');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginModalBtnConfirm','OK');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('lang,en-US','loginModalBtnCancel','Cancel');

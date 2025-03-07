@@ -4,6 +4,8 @@ import com.github.hbq969.code.common.encrypt.ext.config.Decrypt;
 import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
+import com.github.hbq969.code.common.spring.context.SpringContext;
+import com.github.hbq969.code.common.utils.I18nUtils;
 import com.github.hbq969.code.sm.login.dao.entity.UserEntity;
 import com.github.hbq969.code.sm.login.model.PasswordModify;
 import com.github.hbq969.code.sm.login.model.ResetPassword;
@@ -12,13 +14,8 @@ import com.github.hbq969.code.sm.perm.api.SMRequiresPermissions;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Locale;
 
 @RequestMapping(path = "/hbq969-sm/users")
 @Slf4j
@@ -29,7 +26,7 @@ public class UserCtrl implements ICommonControl {
     private LoginService loginService;
 
     @Autowired
-    private ResourceBundleMessageSource messageSource;
+    private SpringContext context;
 
     @ApiOperation("分页查询用户信息")
     @RequestMapping(path = "/list", method = RequestMethod.POST)
@@ -48,7 +45,7 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "saveUser", apiDesc = "新增用户")
     public ReturnMessage<?> saveUser(@RequestBody UserEntity user) {
         loginService.saveUserEntity(user);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.save.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.save.result"));
     }
 
     @ApiOperation("修改用户")
@@ -58,7 +55,7 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "updateUser", apiDesc = "修改用户")
     public ReturnMessage<?> updateUser(@RequestBody UserEntity user) {
         loginService.updateUserEntity(user);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.update.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.update.result"));
     }
 
     @ApiOperation("删除用户")
@@ -68,7 +65,7 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "deleteUser", apiDesc = "删除用户")
     public ReturnMessage<?> deleteUser(@RequestParam(name = "username") String username) {
         loginService.deleteUserEntity(username);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.delete.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.delete.result"));
     }
 
     @ApiOperation("修改密码")
@@ -79,7 +76,7 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "updatePass", apiDesc = "修改密码")
     public ReturnMessage<?> updatePass(@RequestBody PasswordModify modify) {
         loginService.updatePassword(modify);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.update.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.update.result"));
     }
 
     @ApiOperation("重置密码")
@@ -90,6 +87,6 @@ public class UserCtrl implements ICommonControl {
     @SMRequiresPermissions(menu = "User", apiKey = "resetPassword", apiDesc = "重置密码")
     public ReturnMessage<?> resetPassword(@RequestBody ResetPassword rp) {
         loginService.resetPassword(rp);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.reset.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.reset.result"));
     }
 }

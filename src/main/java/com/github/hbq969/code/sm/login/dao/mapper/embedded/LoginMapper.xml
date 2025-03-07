@@ -57,7 +57,7 @@
         CREATE TABLE h_sm_info
         (
             app varchar(255) NOT NULL,
-            info_content clob NOT NULL,
+            info_content text NOT NULL,
             primary key (app)
         )
     </update>

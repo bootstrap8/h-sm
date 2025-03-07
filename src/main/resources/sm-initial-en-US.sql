@@ -2,9 +2,6 @@ delete from h_roles where app='h-sm' and name in ('ADMIN','MANAGE','USER');
 delete from h_menus where app='h-sm' and name in ('system','Role','User','Menu','AI','SiliconFlow');
 delete from h_dict_base where dict_name='menu,icon' and app='common';
 delete from h_dict_pairs where dict_name='menu,icon' and app='common';
-delete from h_sm_info where app='h-sm';
-
-insert into h_sm_info(app,info_content) values('h-sm','{"title":"H-SM"}');
 
 insert into h_roles(app,name,description,created_at) values('h-sm','ADMIN','Administrator',1735800456);
 insert into h_roles(app,name,description,created_at) values('h-sm','MANAGE','Maintenance',1735800456);
@@ -20,6 +17,11 @@ insert into h_role_menus(app,role_name,menu_name) values('h-sm','MANAGE','system
 insert into h_role_menus(app,role_name,menu_name) values('h-sm','MANAGE','Role');
 insert into h_role_menus(app,role_name,menu_name) values('h-sm','MANAGE','User');
 insert into h_role_menus(app,role_name,menu_name) values('h-sm','MANAGE','Menu');
+
+insert into h_dict_base(dict_name,dict_desc,dict_source,key_column,val_column,app) values('i18n,language1','Language abbreviation mapping',1,'key','value','common');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('i18n,language1','zh','zh-CN');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('i18n,language1','en','en-US');
+insert into h_dict_pairs(dict_name,pair_key,pair_value) values('i18n,language1','ja','ja-JP');
 
 insert into h_dict_base(dict_name,dict_desc,dict_source,key_column,val_column,app) values('menu,icon','Menu',1,'key','value','common');
 insert into h_dict_pairs(dict_name,pair_key,pair_value) values('menu,icon','DashboardIcon','Dashboard');

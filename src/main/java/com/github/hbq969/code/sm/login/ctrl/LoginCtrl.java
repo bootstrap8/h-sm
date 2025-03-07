@@ -1,9 +1,12 @@
 package com.github.hbq969.code.sm.login.ctrl;
 
+import cn.hutool.core.util.RandomUtil;
 import com.github.hbq969.code.common.encrypt.ext.config.Decrypt;
 import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
+import com.github.hbq969.code.common.spring.context.SpringContext;
+import com.github.hbq969.code.common.utils.I18nUtils;
 import com.github.hbq969.code.sm.config.LoginConfig;
 import com.github.hbq969.code.sm.login.dao.entity.MenuEntity;
 import com.github.hbq969.code.sm.login.model.LoginInfo;
@@ -15,6 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,7 +44,7 @@ public class LoginCtrl implements ICommonControl {
     private LoginConfig conf;
 
     @Autowired
-    private ResourceBundleMessageSource messageSource;
+    private SpringContext context;
 
     @ApiOperation("登录")
     @RequestMapping(path = "/login", method = RequestMethod.POST)
@@ -49,7 +53,7 @@ public class LoginCtrl implements ICommonControl {
     @Log(collectPostBody = false, collectResult = true)
     public ReturnMessage<?> login(HttpServletRequest request, HttpServletResponse response, @RequestBody LoginInfo info) {
         loginService.login(info, request, response);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.login.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.login.result"));
     }
 
     @ApiOperation("注销")
@@ -58,7 +62,7 @@ public class LoginCtrl implements ICommonControl {
     @Log(collectResult = true)
     public ReturnMessage<?> logout(HttpServletRequest request, HttpServletResponse response) {
         loginService.logout(request, response);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.logout.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.logout.result"));
     }
 
     @ApiOperation("获取账号信息")
@@ -76,5 +80,9 @@ public class LoginCtrl implements ICommonControl {
             info.setAllMenus(Collections.EMPTY_LIST);
         }
         return ReturnMessage.success(info);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(RandomUtil.randomString(16));
     }
 }

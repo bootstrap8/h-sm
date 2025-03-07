@@ -3,6 +3,8 @@ package com.github.hbq969.code.sm.login.ctrl;
 import com.github.hbq969.code.common.log.api.Log;
 import com.github.hbq969.code.common.restful.ICommonControl;
 import com.github.hbq969.code.common.restful.ReturnMessage;
+import com.github.hbq969.code.common.spring.context.SpringContext;
+import com.github.hbq969.code.common.utils.I18nUtils;
 import com.github.hbq969.code.sm.login.dao.entity.MenuEntity;
 import com.github.hbq969.code.sm.login.dao.entity.RoleEntity;
 import com.github.hbq969.code.sm.login.dao.entity.RoleMenuEntity;
@@ -19,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.MessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,12 +45,12 @@ public class RoleCtrl implements ICommonControl {
     private LoginService loginService;
 
     @Autowired
-    private ResourceBundleMessageSource messageSource;
+    private SpringContext context;
 
     @ApiOperation("分页查询角色列表")
     @RequestMapping(path = "/list", method = RequestMethod.POST)
     @ResponseBody
-    @SMRequiresPermissions(menu = "Role",apiKey = "queryRoleList",apiDesc = "分页查询角色列表")
+    @SMRequiresPermissions(menu = "Role", apiKey = "queryRoleList", apiDesc = "分页查询角色列表")
     public ReturnMessage<PageInfo<RoleEntity>> queryRoleList(@RequestParam(name = "pageNum", defaultValue = "1") int pageNum, @RequestParam(name = "pageSize", defaultValue = "10") int pageSize, @RequestBody RoleEntity q) {
         return ReturnMessage.success(loginService.queryRoleList(pageNum, pageSize, q));
     }
@@ -56,46 +59,46 @@ public class RoleCtrl implements ICommonControl {
     @RequestMapping(path = "/role", method = RequestMethod.POST)
     @ResponseBody
     @Log(collectResult = true)
-    @SMRequiresPermissions(menu = "Role",apiKey = "saveRole",apiDesc = "新增角色")
+    @SMRequiresPermissions(menu = "Role", apiKey = "saveRole", apiDesc = "新增角色")
     public ReturnMessage<String> saveRole(@RequestBody RoleEntity role) {
         loginService.saveRoleEntity(role);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.save.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.save.result"));
     }
 
     @ApiOperation("修改角色")
     @RequestMapping(path = "/role", method = RequestMethod.PUT)
     @ResponseBody
     @Log(collectResult = true)
-    @SMRequiresPermissions(menu = "Role",apiKey = "updateRole",apiDesc = "修改角色")
+    @SMRequiresPermissions(menu = "Role", apiKey = "updateRole", apiDesc = "修改角色")
     public ReturnMessage<?> updateRole(@RequestBody RoleEntity role) {
         loginService.updateRoleEntity(role);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.update.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.update.result"));
     }
 
     @ApiOperation("删除角色")
     @RequestMapping(path = "/role", method = RequestMethod.DELETE)
     @ResponseBody
     @Log(collectResult = true)
-    @SMRequiresPermissions(menu = "Role",apiKey = "deleteRole",apiDesc = "删除角色")
+    @SMRequiresPermissions(menu = "Role", apiKey = "deleteRole", apiDesc = "删除角色")
     public ReturnMessage<?> deleteRole(@RequestParam(name = "name") String name) {
         loginService.deleteRoleEntity(name);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.delete.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.delete.result"));
     }
 
     @ApiOperation("保存角色关联菜单")
     @RequestMapping(path = "/role/menus", method = RequestMethod.POST)
     @ResponseBody
     @Log(collectResult = true)
-    @SMRequiresPermissions(menu = "Role",apiKey = "saveRoleMenus",apiDesc = "保存角色关联菜单")
+    @SMRequiresPermissions(menu = "Role", apiKey = "saveRoleMenus", apiDesc = "保存角色关联菜单")
     public ReturnMessage<?> saveRoleMenus(@RequestBody RoleMenuEntity rme) {
         loginService.updateRoleMenus(rme);
-        return ReturnMessage.success(messageSource.getMessage("ctrl.save.result", null, Locale.getDefault()));
+        return ReturnMessage.success(I18nUtils.getMessage(context, "ctrl.save.result"));
     }
 
     @ApiOperation("查询角色菜单配置")
     @RequestMapping(path = "/role/menus", method = RequestMethod.GET)
     @ResponseBody
-    @SMRequiresPermissions(menu = "Role",apiKey = "queryRoleMenus",apiDesc = "查询角色菜单配置")
+    @SMRequiresPermissions(menu = "Role", apiKey = "queryRoleMenus", apiDesc = "查询角色菜单配置")
     public ReturnMessage<RoleMenu> queryRoleMenus(@RequestParam(name = "name") String name) {
         RoleMenu roleMenu = new RoleMenu();
         List<Map> conf = loginService.queryRoleMenus(name);

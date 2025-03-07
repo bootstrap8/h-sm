@@ -2,10 +2,8 @@ package com.github.hbq969.code.sm.login.service.impl;
 
 import com.github.hbq969.code.common.spring.context.SpringContext;
 import com.github.hbq969.code.common.spring.i18n.LangInfo;
-import com.github.hbq969.code.common.spring.i18n.LanguageChangeListener;
 import com.github.hbq969.code.common.spring.i18n.LanguageEvent;
 import com.github.hbq969.code.common.utils.GsonUtils;
-import com.github.hbq969.code.common.utils.StrUtils;
 import com.github.hbq969.code.dict.service.api.impl.MapDictHelperImpl;
 import com.github.hbq969.code.sm.config.LoginConfig;
 import com.github.hbq969.code.sm.login.dao.LoginDao;
@@ -13,10 +11,10 @@ import com.github.hbq969.code.sm.login.dao.entity.MenuEntity;
 import com.github.hbq969.code.sm.login.dao.entity.RoleEntity;
 import com.github.hbq969.code.sm.login.dao.entity.RoleMenuEntity;
 import com.github.hbq969.code.sm.login.dao.entity.UserEntity;
-import com.github.hbq969.code.sm.login.event.SMInfoEvent;
 import com.github.hbq969.code.sm.login.model.*;
 import com.github.hbq969.code.sm.login.service.LoginService;
 import com.github.hbq969.code.sm.login.session.UserContext;
+import com.github.hbq969.code.sm.login.utils.I18nUtils;
 import com.github.hbq969.code.sm.perm.dao.entity.MenuPermEntity;
 import com.github.hbq969.code.sm.perm.service.CacheService;
 import com.github.pagehelper.PageHelper;
@@ -24,19 +22,14 @@ import com.github.pagehelper.PageInfo;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
-import com.google.common.collect.ImmutableMap;
-import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
-import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.dao.DataAccessException;
+import org.springframework.context.ApplicationListener;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -51,14 +44,12 @@ import javax.servlet.http.HttpSession;
 import java.nio.charset.Charset;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.*;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class LoginServiceImpl implements LoginService, InitializingBean, LanguageChangeListener {
+public class LoginServiceImpl implements LoginService, InitializingBean, ApplicationListener<LanguageEvent> {
 
     @Autowired
     private LoginDao loginDao;
@@ -78,127 +69,44 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
     @Autowired
     private CacheService cacheService;
 
-    @Autowired
-    private ResourceBundleMessageSource messageSource;
-
     private Cache<String, HttpSession> sessions;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    private CountDownLatch cdl = new CountDownLatch(1);
-
     @Override
     public void afterPropertiesSet() throws Exception {
-        try {
-            initialData();
-        } finally {
-            cdl.countDown();
-        }
-        log.info("配置的cookie、会话超时时间: {} 秒。", conf.getCookieMaxAgeSec());
-        this.sessions = CacheBuilder.newBuilder().maximumSize(500).initialCapacity(100).concurrencyLevel(10).expireAfterAccess(conf.getCookieMaxAgeSec(), TimeUnit.SECONDS).removalListener((RemovalListener<String, HttpSession>) notif -> {
-            log.info("session自动过期，sid: {}", notif.getKey());
-            notif.getValue().invalidate();
-        }).build();
-    }
-
-    private void initialData() {
-        try {
-            loginDao.createRoles();
-        } catch (Exception e) {
-        }
-        try {
-            loginDao.createMenus();
-        } catch (Exception e) {
-        }
-        try {
-            loginDao.createUsers();
-        } catch (Exception e) {
-        }
-        try {
-            loginDao.createRoleMenus();
-        } catch (Exception e) {
-        }
-        try {
-            loginDao.createSMSystem();
-        } catch (Exception e) {
-        }
-        initialScript();
-    }
-
-    private void initialScript() {
-        try {
-            log.info("h-sm login模块重新初始化脚本数据，{}, {}", conf.getInitScriptFile(), conf.getInitScriptFileCharset());
-            List<String> lines = IOUtils.readLines(LoginServiceImpl.class.getResourceAsStream("/" + conf.getInitScriptFile()), Charset.forName(conf.getInitScriptFileCharset()));
-            List<String> box = new ArrayList<>();
-            for (String line : lines) {
-                if (StrUtils.strEmpty(line) || StrUtils.strEmpty(line.trim())) {
-                    continue;
-                }
-                line = line.trim();
-                box.add(line);
-                if (line.endsWith(";")) {
-                    String sql = String.join("\n", box).replaceAll("h-sm", context.getProperty("spring.application.name"));
-                    if (sql.endsWith(";")) {
-                        sql = sql.substring(0, sql.length() - 1);
-                    }
-                    try {
-                        context.getBean(JdbcTemplate.class).update(sql);
-                    } catch (DataAccessException e) {
-                    }
-                    box.clear();
-                }
-
-            }
-        } catch (Exception e) {
-            log.error("", e);
-        } finally {
-            dict.reloadImmediately();
-        }
-        loadSMInfo(new SMInfoEvent("h-sm"));
+        initial();
+        cookieInitial();
     }
 
     @Override
-    public void onChange(LangInfo langInfo) {
-        log.info("h-sm login模块监听到语言变化通知: {}", GsonUtils.toJson(langInfo));
+    public void onApplicationEvent(LanguageEvent event) {
+        LangInfo langInfo = (LangInfo) event.getSource();
+        log.info("监听到语言变化事件: {}", GsonUtils.toJson(langInfo));
         String lang = langInfo.getLang();
-        conf.setInitScriptFile(String.format("sm-initial_%s.sql", lang));
-        conf.setLanguage(lang);
+        conf.getSmInitialScript().setLanguage(lang);
+        conf.getServiceInitialScript().setLanguage(lang);
         initialScript();
     }
 
-    @Override
-    public String listenerName() {
-        return "h-sm/login";
-    }
 
     @Override
-    public int listenerOrder() {
-        return Integer.MIN_VALUE;
-    }
-
-
-    @Override
-    public void loadSMInfo(SMInfoEvent event) {
-        log.info("{} 模块，监听到h-sm信息变化事件", event.getSource());
+    public void loadSMInfo() {
+        log.info("监听到sm信息变化事件");
         try {
-            String sql = "select info_content AS \"info\" from h_sm_info where app=?";
-            Map map = context.getBean(JdbcTemplate.class).queryForMap(sql, new Object[]{app}, new int[]{Types.VARCHAR});
-            log.info("加载sm信息, {}, {}, 加载到sm信息: {}", sql, app, GsonUtils.toJson(map));
-            String info = MapUtils.getString(map, "info");
-            SMInfo smInfo = GsonUtils.fromJson(info, SMInfo.class);
-            conf.setSmInfo(smInfo);
+            Map map = loginDao.querySMInfo(app);
+            if (log.isDebugEnabled()) {
+                log.debug("重新加载sm信息: {}", map);
+            }
+            String info = MapUtils.getString(map, "info_content", "{}");
+            SMInfo sm = GsonUtils.fromJson(info, SMInfo.class);
+            conf.setSmInfo(sm);
         } catch (Exception e) {
-            log.error("加载sm信息异常", e);
+            log.error("重新加载sm信息异常: {}", e.getMessage());
+            SMInfo sm = new SMInfo();
+            sm.setTitle(app);
+            conf.setSmInfo(sm);
         }
-    }
-
-    @Override
-    public void finished(Runnable r) {
-        try {
-            cdl.await();
-        } catch (InterruptedException e) {
-        }
-        r.run();
     }
 
     @Override
@@ -235,7 +143,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
     public void deleteRoleEntity(String roleName) {
         UserInfo ui = UserContext.get();
         if (ui == null || !StringUtils.equals("ADMIN", ui.getRoleName())) {
-            throw new UnsupportedOperationException(messageSource.getMessage("service.login.permission.adminOnly", null, Locale.getDefault()));
+            throw new UnsupportedOperationException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.permission.adminOnly"));
         }
         loginDao.deleteMenuEntities(app, roleName);
         loginDao.deleteUserEntities(app, roleName);
@@ -280,7 +188,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
     public void deleteUserEntity(String username) {
         UserInfo ui = UserContext.get();
         if (null == ui || !StringUtils.equals("ADMIN", ui.getRoleName())) {
-            throw new UnsupportedOperationException(messageSource.getMessage("service.login.permission.adminOnly", null, Locale.getDefault()));
+            throw new UnsupportedOperationException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.permission.adminOnly"));
         }
         loginDao.deleteUserEntity(app, username);
     }
@@ -289,14 +197,14 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
     public void updatePassword(PasswordModify passwordModify) {
         UserInfo ui = UserContext.get();
         if (null == ui || (!ui.isAdmin() && !StringUtils.equals(ui.getUserName(), passwordModify.getUsername()))) {
-            throw new UnsupportedOperationException(messageSource.getMessage("service.login.pwd.doNot", null, Locale.getDefault()));
+            throw new UnsupportedOperationException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.pwd.doNot"));
         }
         UserEntity ue = loginDao.queryUserEntity(app, passwordModify.getUsername());
         if (ue == null) {
-            throw new UnsupportedOperationException(messageSource.getMessage("service.login.username.notExists", null, Locale.getDefault()));
+            throw new UnsupportedOperationException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.username.notExists"));
         }
         if (!encoder.matches(passwordModify.getOldPassword(), ue.getPassword())) {
-            throw new IllegalArgumentException(messageSource.getMessage("service.login.oldPwd.notRight", null, Locale.getDefault()));
+            throw new IllegalArgumentException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.oldPwd.notRight"));
         }
         passwordModify.hash(encoder);
         loginDao.updateUserPassword(app, passwordModify);
@@ -306,10 +214,10 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
     public void resetPassword(ResetPassword rp) {
         UserInfo ui = UserContext.get();
         if (null == ui || !StringUtils.equals("ADMIN", ui.getRoleName())) {
-            throw new UnsupportedOperationException(messageSource.getMessage("service.login.permission.adminOnly", null, Locale.getDefault()));
+            throw new UnsupportedOperationException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.permission.adminOnly"));
         }
         if (!rp.same()) {
-            throw new IllegalArgumentException(messageSource.getMessage("service.login.pwd.twiceWrong", null, Locale.getDefault()));
+            throw new IllegalArgumentException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.pwd.twiceWrong"));
         }
         PasswordModify modify = new PasswordModify();
         modify.setUsername(rp.getUsername());
@@ -362,7 +270,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
     public void deleteMenuEntity(String name) {
         UserInfo ui = UserContext.get();
         if (null == ui || (!StringUtils.equals("ADMIN", ui.getRoleName()) && MenuEntity.SYSTEM_MENUS.contains(name))) {
-            throw new UnsupportedOperationException(messageSource.getMessage("service.login.permission.adminOnly", null, Locale.getDefault()));
+            throw new UnsupportedOperationException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.permission.adminOnly"));
         }
         loginDao.deleteMenuEntity(app, name);
         loginDao.deleteMenuForRole(app, name);
@@ -384,7 +292,7 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
         UserInfo ui = UserContext.get();
         if (!StringUtils.equals("ADMIN", ui.getRoleName())
                 && !StringUtils.equals(ui.getRoleName(), roleMenuEntity.getRole().getName())) {
-            throw new UnsupportedOperationException(messageSource.getMessage("service.login.menu.notConfig", null, Locale.getDefault()));
+            throw new UnsupportedOperationException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.menu.notConfig"));
         }
         loginDao.deleteMenuEntities(app, roleMenuEntity.getRole().getName());
         context.getBean(JdbcTemplate.class).batchUpdate("insert into h_role_menus(app,role_name,menu_name) values(?,?,?)", new BatchPreparedStatementSetter() {
@@ -414,8 +322,13 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
             log.info("密码验证一致");
             resetSessionUserInfo(request, user);
         } else {
-            throw new IllegalArgumentException(messageSource.getMessage("service.login.pwd.wrong", null, Locale.getDefault()));
+            throw new IllegalArgumentException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.pwd.wrong"));
         }
+    }
+
+    @Override
+    public void refreshSessionInfo(HttpServletRequest request, UserEntity user) {
+        resetSessionUserInfo(request, user);
     }
 
     private void resetSessionUserInfo(HttpServletRequest request, UserEntity user) {
@@ -524,8 +437,57 @@ public class LoginServiceImpl implements LoginService, InitializingBean, Languag
         if (session != null) {
             return (UserInfo) session.getAttribute("h-sm-user");
         } else {
-            throw new RuntimeException(messageSource.getMessage("service.login.session.invalid", null, Locale.getDefault()));
+            throw new RuntimeException(com.github.hbq969.code.common.utils.I18nUtils.getMessage(context, "service.login.session.invalid"));
         }
+    }
+
+    private void initial() {
+        createTables();
+        initialScript();
+    }
+
+    private void createTables() {
+        try {
+            loginDao.createRoles();
+        } catch (Exception e) {
+        }
+        try {
+            loginDao.createMenus();
+        } catch (Exception e) {
+        }
+        try {
+            loginDao.createUsers();
+        } catch (Exception e) {
+        }
+        try {
+            loginDao.createRoleMenus();
+        } catch (Exception e) {
+        }
+        try {
+            loginDao.createSMSystem();
+        } catch (Exception e) {
+        }
+    }
+
+    private void initialScript() {
+        // 1.初始化h-sm的脚本数据
+        Charset charset = Charset.forName(conf.getSmInitialScript().getCharset());
+        String filename = String.join("", conf.getSmInitialScript().getPrefix(), "-", conf.getSmInitialScript().getLanguage(), ".sql");
+        com.github.hbq969.code.common.utils.InitScriptUtils.initial(context, filename, charset,
+                sql -> sql.replaceAll("h-sm", app),
+                () -> dict.reloadImmediately());
+        // 2.初始化当前服务的脚本数据
+        String language = I18nUtils.getFullLanguage(context);
+        filename = String.join("", conf.getServiceInitialScript().getPrefix(), "-", conf.getServiceInitialScript().getLanguage(), ".sql");
+        com.github.hbq969.code.common.utils.InitScriptUtils.initial(context, filename, charset, null,
+                () -> loadSMInfo());
+    }
+
+    private void cookieInitial() {
+        this.sessions = CacheBuilder.newBuilder().maximumSize(500).initialCapacity(100).concurrencyLevel(10).expireAfterAccess(conf.getCookieMaxAgeSec(), TimeUnit.SECONDS).removalListener((RemovalListener<String, HttpSession>) notif -> {
+            log.info("session自动过期，sid: {}", notif.getKey());
+            notif.getValue().invalidate();
+        }).build();
     }
 }
 

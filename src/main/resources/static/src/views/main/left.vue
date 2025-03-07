@@ -10,16 +10,16 @@ import {
   resolveComponent,
   defineComponent,
   h,
-  nextTick,
-  computed,
   provide,
-  inject
 } from 'vue';
 import axios from '@/network';
 import {msg} from '@/utils/Utils';
 import router from '@/router'
 import {getLangData} from "@/i18n/locale";
+import {switchLang} from "@/i18n/common";
+import LocaleRadioGroup from "@/components/LocaleRadioGroup.vue";
 
+const localeRadio=ref(window.sessionStorage.getItem('h-sm-lang') || 'zh-CN')
 const langData = getLangData()
 
 const layout = ref('main_left')
@@ -157,7 +157,7 @@ const handleMenuSelect = async (index: string) => {
   } else {
     activeMenu.value = index;
     let menuName = menuMap[index];
-    langData.mainMainPage = menuName;
+    data.currentPage = menuName;
 
     // 检查是否已经存在该 Tab
     const tab = tabs.value.find((tab) => tab.name === index);
@@ -263,6 +263,7 @@ const refreshPage = () => {
 };
 
 const tabClick = (pane, ev) => {
+  data.currentPage=pane.props.label
 }
 
 // 防抖函数
@@ -302,14 +303,14 @@ const _ = (window as any).ResizeObserver;
               v-model="layout"
               class="ml-2"
               inline-prompt
-              style="--el-switch-on-color: #79BBFF; --el-switch-off-color: #95D475;margin-right: 5px"
+              style="--el-switch-on-color: #79BBFF; --el-switch-off-color: #95D475;margin-right: 10px"
               active-value="main_left"
               inactive-value="main_top"
-              :active-text="langData.mainLayoutUd"
-              :inactive-text="langData.mainLayoutLr"
+              :active-text="langData.mainLayoutLr"
+              :inactive-text="langData.mainLayoutUd"
               @change="router.push({path:`/${layout}`})"
           />
-          <!--          <TimeComponent/>-->
+          <LocaleRadioGroup :radio-name="localeRadio" style="margin-right: 10px" @locale-change="switchLang"/>
           <span style="margin-right: 10px;margin-left:0px; padding:0;font-size: 0.6em;">
             {{ data.user.userName }}
           </span>
@@ -397,7 +398,7 @@ const _ = (window as any).ResizeObserver;
               <!-- 导航面包屑 -->
               <el-breadcrumb separator="/">
                 <el-breadcrumb-item>{{ langData.mainFirstPage}}</el-breadcrumb-item>
-                <el-breadcrumb-item>{{ langData.mainMainPage }}</el-breadcrumb-item>
+                <el-breadcrumb-item>{{ data.currentPage }}</el-breadcrumb-item>
               </el-breadcrumb>
             </div>
 

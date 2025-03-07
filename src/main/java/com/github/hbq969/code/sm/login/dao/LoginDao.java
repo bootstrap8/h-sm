@@ -57,9 +57,12 @@ public interface LoginDao {
     void deleteMenuEntity(@Param("app") String app, @Param("name") String name);
 
     List<MenuEntity> querySubMenuList(@Param("app") String app, @Param("parentId") String parent);
+
     void deleteMenuEntities(@Param("app") String app, @Param("roleName") String roleName);
 
     void deleteMenuForRole(@Param("app") String app, @Param("menuName") String menuName);
 
     UserEntity queryUserByName(@Param("app") String app, @Param("name") String name);
+
+    Map querySMInfo(@Param("app") String app);
 }

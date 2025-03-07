@@ -2,7 +2,7 @@
 import {
   Edit
 } from '@element-plus/icons-vue'
-import {ref, reactive, onMounted, computed, provide, inject} from 'vue'
+import {ref, reactive, onMounted} from 'vue'
 import axios from '@/network'
 import {msg, deobfuscate, encryptAES} from '@/utils/Utils'
 import type {FormInstance, FormRules} from 'element-plus'
@@ -12,8 +12,8 @@ import {getLangData} from "@/i18n/locale";
 const langData = getLangData()
 
 const obfs = "969";
-const key = CryptoJS.enc.Utf8.parse(deobfuscate("΍ΊϻΌΌϱϰϺϸΌϽϺϽΈϽϽ", obfs));
-const iv = key
+const key = CryptoJS.enc.Utf8.parse(deobfuscate("΍ϻΏΊϹϽϼϽ΍ϽϹ΋ϽϽϿϸ", obfs));
+const iv = CryptoJS.enc.Utf8.parse(deobfuscate("ΊϽϽϸϾ΍ΊϱϹΊϸϽϽϼ΋Ό", obfs));
 
 const user = ref({})
 
